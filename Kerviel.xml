@@ -1,0 +1,837 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/../FrameXML/UI.xsd">
+
+	<!-- Identique à ThinGoldEdgeTemplate, mais ne nécessite pas d'avoir un nom -->
+	<Frame name="KervielThinGoldEdgeTemplate" virtual="true">
+		<Size>
+			<AbsDimension x="100" y="20"/>
+		</Size>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture parentKey="Left" file="Interface\Common\Moneyframe">
+					<Size x="7" y="20"/>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMLEFT"/>
+					</Anchors>
+					<TexCoords left="0.953125" right="0.9921875" top="0" bottom="0.296875"/>
+				</Texture>
+				<Texture parentKey="Right" file="Interface\Common\Moneyframe">
+					<Size x="7" y="20"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT"/>
+						<Anchor point="BOTTOMRIGHT"/>
+					</Anchors>
+					<TexCoords left="0" right="0.0546875" top="0" bottom="0.296875"/>
+				</Texture>
+				<Texture parentKey="Middle" file="Interface\Common\Moneyframe">
+					<Size x="80" y="20"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.Left" relativePoint="TOPRIGHT"/>
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent.Right" relativePoint="BOTTOMLEFT"/>
+					</Anchors>
+					<TexCoords left="0" right="0.9921875" top="0.3125" bottom="0.609375"/>
+				</Texture>
+			</Layer>
+		</Layers>
+	</Frame>
+
+	<!-- Bouton du menu principal - d'après HelpFrame.xml -->
+	<Button name="KervielMenuBarButtonTemplate" parentArray="buttons" virtual="true">
+		<Size x="174" y="54"/>
+		<Layers>
+			<Layer level="OVERLAY">
+				<Texture parentKey="icon" file="Interface\Icons\Ability_ThunderClap">
+					<Size x="32" y="32"/>
+					<Anchors>
+						<Anchor point="LEFT" x="8" y="0"/>
+					</Anchors>
+				</Texture>
+				<Texture parentKey="selected" file="Interface\HelpFrame\HelpButtons" hidden="true">
+					<Size x="174" y="54"/>
+					<Anchors>
+						<Anchor point="CENTER" x="0" y="0"/>
+					</Anchors>
+					<TexCoords left="0.00390625" right="0.68359375" top="0.66015625" bottom="0.87109375"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<ButtonText parentKey="text" inherits="GameFontNormal" justifyH="LEFT" justifyV="MIDDLE">
+			<Size x="120" y="32"/>
+			<Anchors>
+				<Anchor point="LEFT" relativeKey="$parent.icon" relativePoint="RIGHT" x="4" y="0"/>
+			</Anchors>
+		</ButtonText>
+		<NormalTexture file="Interface\HelpFrame\HelpButtons">
+			<TexCoords left="0.00390625" right="0.68359375" top="0.44140625" bottom="0.65234375"/>
+		</NormalTexture>
+		<PushedTexture file="Interface\HelpFrame\HelpButtons">
+			<TexCoords left="0.00390625" right="0.68359375" top="0.22265625" bottom="0.43359375"/>
+		</PushedTexture>
+		<HighlightTexture file="Interface\HelpFrame\HelpButtons" alphaMode="ADD">
+			<TexCoords left="0.00390625" right="0.68359375" top="0.00390625" bottom="0.21484375"/>
+		</HighlightTexture>
+	</Button>
+
+	<!-- Base pour toutes nos frames intérieures -->
+	<Frame name="KervielInsetFrameNoShadowTemplate" virtual="true">
+		<Size x="512" y="512"/>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture parentKey="bg" setAllPoints="true" horizTile="true" vertTile="true" />
+			</Layer>
+			<Layer level="BORDER" textureSubLevel="1">
+				<!-- Coins -->
+				<Texture inherits="UI-Frame-InnerTopLeft" parentKey="InsetBorderTopLeft">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.Bg"/>
+					</Anchors>
+				</Texture>
+				<Texture inherits="UI-Frame-InnerTopRight" parentKey="InsetBorderTopRight">
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativeKey="$parent.Bg"/>
+					</Anchors>
+				</Texture>
+				<Texture inherits="UI-Frame-InnerBotLeftCorner" parentKey="InsetBorderBottomLeft">
+					<Anchors>
+						<Anchor point="BOTTOMLEFT" relativeKey="$parent.Bg" y="-1"/>
+					</Anchors>
+				</Texture>
+				<Texture inherits="UI-Frame-InnerBotRight" parentKey="InsetBorderBottomRight">
+					<Anchors>
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent.Bg" y="-1"/>
+					</Anchors>
+				</Texture>
+				<!-- Bords -->
+				<Texture inherits="_UI-Frame-InnerTopTile" parentKey="InsetBorderTop">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.InsetBorderTopLeft" relativePoint="TOPRIGHT"/>
+						<Anchor point="TOPRIGHT" relativeKey="$parent.InsetBorderTopRight" relativePoint="TOPLEFT"/>
+					</Anchors>
+				</Texture>
+				<Texture inherits="_UI-Frame-InnerBotTile" parentKey="InsetBorderBottom">
+					<Anchors>
+						<Anchor point="BOTTOMLEFT" relativeKey="$parent.InsetBorderBottomLeft" relativePoint="BOTTOMRIGHT"/>
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent.InsetBorderBottomRight" relativePoint="BOTTOMLEFT"/>
+					</Anchors>
+				</Texture>
+				<Texture inherits="!UI-Frame-InnerLeftTile" parentKey="InsetBorderLeft">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.InsetBorderTopLeft" relativePoint="BOTTOMLEFT" x="0" y="0" />
+						<Anchor point="BOTTOMLEFT" relativeKey="$parent.InsetBorderBottomLeft" relativePoint="TOPLEFT"/>
+					</Anchors>
+				</Texture>
+				<Texture inherits="!UI-Frame-InnerRightTile" parentKey="InsetBorderRight">
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativeKey="$parent.InsetBorderTopRight" relativePoint="BOTTOMRIGHT"/>
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent.InsetBorderBottomRight" relativePoint="TOPRIGHT"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame parentKey="error" setAllPoints="true" hidden="true">
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString parentKey="text" inherits="GameFontHighlight" setAllPoints="true" justifyH="CENTER" justifyV="MIDDLE" />
+					</Layer>
+				</Layers>
+			</Frame>
+		</Frames>
+	</Frame>
+	<Frame name="KervielInsetFrameTemplate" inherits="KervielInsetFrameNoShadowTemplate" virtual="true">
+		<Layers>
+			<Layer level="BORDER" textureSubLevel="-1">
+				<Texture parentKey="LeftTopCorner-Shadow" file="Interface\BankFrame\CornersShadow">
+					<Size x="44" y="44"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativePoint="TOPLEFT" x="2" y="-2"/>
+					</Anchors>
+					<TexCoords left="0.01562500" right="0.70312500" top="0.00390625" bottom="0.17578125"/>
+				</Texture>
+				<Texture parentKey="LeftBottomCorner-Shadow" file="Interface\BankFrame\CornersShadow">
+					<Size x="44" y="44"/>
+					<Anchors>
+						<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMLEFT" x="2" y="2"/>
+					</Anchors>
+					<TexCoords left="0.01562500" right="0.70312500" top="0.18359375" bottom="0.35546875"/>
+				</Texture>
+				<Texture parentKey="RightTopCorner-Shadow" file="Interface\BankFrame\CornersShadow">
+					<Size x="44" y="44"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativePoint="TOPRIGHT" x="-3" y="-2"/>
+					</Anchors>
+					<TexCoords left="0.01562500" right="0.70312500" top="0.36328125" bottom="0.53515625"/>
+				</Texture>
+				<Texture parentKey="RightBottomCorner-Shadow" file="Interface\BankFrame\CornersShadow">
+					<Size x="44" y="44"/>
+					<Anchors>
+						<Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMRIGHT" x="-3" y="2"/>
+					</Anchors>
+					<TexCoords left="0.01562500" right="0.70312500" top="0.54296875" bottom="0.71484375"/>
+				</Texture>
+				<Texture parentKey="Right-Shadow" file="Interface\BankFrame\VertShadow" vertTile="true" >
+					<Size x="17" y="256"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativeKey="$parent.RightTopCorner-Shadow" relativePoint="BOTTOMRIGHT"/>
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent.RightBottomCorner-Shadow" relativePoint="TOPRIGHT"/>
+					</Anchors>
+					<TexCoords left="0.01562500" right="0.28125000" top="0.00000000" bottom="1.00000000"/>
+				</Texture>
+				<Texture parentKey="Left-Shadow" file="Interface\BankFrame\VertShadow" vertTile="true" >
+					<Size x="17" y="256"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.LeftTopCorner-Shadow" relativePoint="BOTTOMLEFT"/>
+						<Anchor point="BOTTOMLEFT" relativeKey="$parent.LeftBottomCorner-Shadow" relativePoint="TOPLEFT"/>
+					</Anchors>
+					<TexCoords left="0.31250000" right="0.57812500" top="0.00000000" bottom="1.00000000"/>
+				</Texture>
+				<Texture parentKey="Bottom-Shadow" file="Interface\BankFrame\HorizShadow" horizTile="true" >
+					<Size x="256" y="17"/>
+					<Anchors>
+						<Anchor point="BOTTOMLEFT" relativeKey="$parent.LeftBottomCorner-Shadow" relativePoint="BOTTOMRIGHT"/>
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent.RightBottomCorner-Shadow" relativePoint="BOTTOMLEFT"/>
+					</Anchors>
+					<TexCoords left="0.00000000" right="1.00000000" top="0.01562500" bottom="0.28125000"/>
+				</Texture>
+				<Texture parentKey="Top-Shadow" file="Interface\BankFrame\HorizShadow" horizTile="true" >
+					<Size x="256" y="17"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.LeftTopCorner-Shadow" relativePoint="TOPRIGHT"/>
+						<Anchor point="TOPRIGHT" relativeKey="$parent.RightTopCorner-Shadow" relativePoint="TOPLEFT"/>
+					</Anchors>
+					<TexCoords left="0.00000000" right="1.00000000" top="0.31250000" bottom="0.57812500"/>
+				</Texture>
+			</Layer>
+		</Layers>
+	</Frame>
+
+	<!-- Base pour tous nos boutons -->
+	<Button name="KervielItemButtonTemplate" inherits="ItemButtonTemplate" virtual="true">
+		<Scripts>
+			<OnLoad>
+				--self:SetHighlightTexture(nil)
+				self:SetPushedTexture(nil)
+				--self.Count:SetFontObject(NumberFontNormalYellow)
+
+				self.UpdateTooltip = self:GetScript('OnEnter')
+			</OnLoad>
+			<OnEnter>
+				if self.itemID then
+					GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+					--GameTooltip:SetItemByID(self.itemID)
+					GameTooltip:SetHyperlink('Hitem:'..self.itemID..'|h')	-- LibExtraTip ne gère pas SetItemByID()
+					GameTooltip:Show()
+				end
+			</OnEnter>
+			<OnLeave>
+				if GameTooltip:GetOwner() == self then
+					GameTooltip:Hide()
+				end
+			</OnLeave>
+		</Scripts>
+	</Button>
+
+	<!--
+	**************************************************************************
+	Banque
+	**************************************************************************
+	 -->
+	<Frame name="KervielBankFrameTemplate" inherits="KervielInsetFrameTemplate" hidden="true" virtual="true">
+		<Size x="385" y="355"/>
+		<Frames>
+			<Frame parentKey="contents" setAllPoints="true">
+				<Layers>
+					<Layer level="BORDER">
+						<FontString parentKey="slotsText" inherits="GameFontNormal" text="ITEMSLOTTEXT">
+							<Anchors>
+								<Anchor point="TOP" x="0" y="-30"/>
+							</Anchors>
+						</FontString>
+						<FontString parentKey="bagsText" inherits="GameFontNormal" text="BAGSLOTTEXT">
+							<Anchors>
+								<Anchor point="TOP" relativeKey="$parent.slotsText" relativePoint="BOTTOM" x="0" y="-215"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+			</Frame>
+		</Frames>
+		<Scripts>
+			<OnLoad>
+				self.bg:SetTexture('Interface\\BankFrame\\Bank-Background', true, true)
+			</OnLoad>
+		</Scripts>
+	</Frame>
+
+	<!--
+	**************************************************************************
+	Banque de composants
+	**************************************************************************
+	 -->
+	<Frame name="KervielReagentBankFrameTemplate" inherits="KervielInsetFrameTemplate" hidden="true" virtual="true">
+		<Size x="774" y="385"/>
+		<Frames>
+			<Frame parentKey="contents" setAllPoints="true">
+				<Layers>
+					<Layer level="BORDER">
+						<FontString parentKey="slotsText" inherits="GameFontNormal" text="ITEMSLOTTEXT">
+							<Anchors>
+								<Anchor point="TOP" x="0" y="-30"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+					<!-- Colonnes -->
+					<Layer level="ARTWORK">
+						<Texture parentKey="BG1" atlas="bank-slots" useAtlasSize="true" >
+							<Anchors>
+								<Anchor point="TOPLEFT" x="28" y="-55"/>
+							</Anchors>
+						</Texture>
+						<Texture parentKey="BG2" atlas="bank-slots" useAtlasSize="true" >
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.BG1" relativePoint="TOPRIGHT" x="5" y="0"/>
+							</Anchors>
+						</Texture>
+						<Texture parentKey="BG3" atlas="bank-slots" useAtlasSize="true" >
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.BG2" relativePoint="TOPRIGHT" x="5" y="0"/>
+							</Anchors>
+						</Texture>
+						<Texture parentKey="BG4" atlas="bank-slots" useAtlasSize="true" >
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.BG3" relativePoint="TOPRIGHT" x="5" y="0"/>
+							</Anchors>
+						</Texture>
+						<Texture parentKey="BG5" atlas="bank-slots" useAtlasSize="true" >
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.BG4" relativePoint="TOPRIGHT" x="5" y="0"/>
+							</Anchors>
+						</Texture>
+						<Texture parentKey="BG6" atlas="bank-slots" useAtlasSize="true" >
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.BG5" relativePoint="TOPRIGHT" x="5" y="0"/>
+							</Anchors>
+						</Texture>
+						<Texture parentKey="BG7" atlas="bank-slots" useAtlasSize="true" >
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.BG6" relativePoint="TOPRIGHT" x="5" y="0"/>
+							</Anchors>
+						</Texture>
+					</Layer>
+					<!-- Fond des colonnes -->
+					<Layer level="BACKGROUND">
+						<Texture atlas="bank-slots-shadow" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="CENTER" relativeKey="$parent.BG1" relativePoint="CENTER" x="0" y="0"/>
+							</Anchors>
+						</Texture>
+						<Texture atlas="bank-slots-shadow" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="CENTER" relativeKey="$parent.BG2" relativePoint="CENTER" x="0" y="0"/>
+							</Anchors>
+						</Texture>
+						<Texture atlas="bank-slots-shadow" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="CENTER" relativeKey="$parent.BG3" relativePoint="CENTER" x="0" y="0"/>
+							</Anchors>
+						</Texture>
+						<Texture atlas="bank-slots-shadow" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="CENTER" relativeKey="$parent.BG4" relativePoint="CENTER" x="0" y="0"/>
+							</Anchors>
+						</Texture>
+						<Texture atlas="bank-slots-shadow" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="CENTER" relativeKey="$parent.BG5" relativePoint="CENTER" x="0" y="0"/>
+							</Anchors>
+						</Texture>
+						<Texture atlas="bank-slots-shadow" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="CENTER" relativeKey="$parent.BG6" relativePoint="CENTER" x="0" y="0"/>
+							</Anchors>
+						</Texture>
+						<Texture atlas="bank-slots-shadow" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="CENTER" relativeKey="$parent.BG7" relativePoint="CENTER" x="0" y="0"/>
+							</Anchors>
+						</Texture>
+					</Layer>
+				</Layers>
+			</Frame>
+		</Frames>
+		<Scripts>
+			<OnLoad>
+				self.bg:SetTexture('Interface\\BankFrame\\Bank-Background', true, true)
+			</OnLoad>
+		</Scripts>
+	</Frame>
+
+	<!--
+	**************************************************************************
+	Banque de guilde
+	**************************************************************************
+	-->
+	<Texture name="KervielGuildBankFrameColumnTemplate" file="Interface\GuildBankFrame\UI-GuildBankFrame-Slots" virtual="true">
+		<Size x="100" y="311"/>
+		<TexCoords left="0" right="0.78125" top="0" bottom="0.607421875" />
+	</Texture>
+	<Frame name="KervielGuildBankFrameTemplate" inherits="KervielInsetFrameTemplate" hidden="true" virtual="true">
+		<Size x="774" y="385"/>
+		<Frames>
+			<Frame parentKey="contents" setAllPoints="true">
+				<Layers>
+					<!-- Cadre des colonnes -->
+					<Layer level="ARTWORK" textureSubLevel="2">
+						<Texture parentKey="TopLeftInner" file="Interface\GuildBankFrame\Corners">
+							<Size x="32" y="32"/>
+							<Anchors>
+								<Anchor point="TOPLEFT" x="23" y="-49"/>
+							</Anchors>
+							<TexCoords left="0.01562500" right="0.51562500" top="0.40234375" bottom="0.52734375"/>
+						</Texture>
+						<Texture parentKey="TopRightInner" file="Interface\GuildBankFrame\Corners">
+							<Size x="32" y="32"/>
+							<Anchors>
+								<Anchor point="TOPRIGHT" x="-23" y="-49"/>
+							</Anchors>
+							<TexCoords left="0.01562500" right="0.51562500" top="0.26953125" bottom="0.39453125"/>
+						</Texture>
+						<Texture parentKey="BottomLeftInner" file="Interface\GuildBankFrame\Corners">
+							<Size x="32" y="32"/>
+							<Anchors>
+								<Anchor point="BOTTOMLEFT" x="23" y="16"/>
+							</Anchors>
+							<TexCoords left="0.01562500" right="0.51562500" top="0.00390625" bottom="0.12890625"/>
+						</Texture>
+						<Texture parentKey="BottomRightInner" file="Interface\GuildBankFrame\Corners" >
+							<Size x="32" y="32"/>
+							<Anchors>
+								<Anchor point="BOTTOMRIGHT" x="-23" y="16"/>
+							</Anchors>
+							<TexCoords left="0.01562500" right="0.51562500" top="0.13671875" bottom="0.26171875"/>
+						</Texture>
+						<Texture parentKey="LeftInner" file="Interface\GuildBankFrame\VertTile" vertTile="true">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.TopLeftInner" relativePoint="BOTTOMLEFT" x="-3"/>
+								<Anchor point="BOTTOMLEFT" relativeKey="$parent.BottomLeftInner" relativePoint="TOPLEFT" x="-3"/>
+							</Anchors>
+						</Texture>
+						<Texture parentKey="RightInner" file="Interface\GuildBankFrame\VertTile" vertTile="true">
+							<Anchors>
+								<Anchor point="TOPRIGHT" relativeKey="$parent.TopRightInner" relativePoint="BOTTOMRIGHT" x="4"/>
+								<Anchor point="BOTTOMRIGHT" relativeKey="$parent.BottomRightInner" relativePoint="TOPRIGHT" x="4"/>
+							</Anchors>
+						</Texture>
+						<Texture parentKey="TopInner" file="Interface\GuildBankFrame\HorizTile" horizTile="true">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.TopLeftInner" relativePoint="TOPRIGHT" y="3"/>
+								<Anchor point="TOPRIGHT" relativeKey="$parent.TopRightInner" relativePoint="TOPLEFT" y="3"/>
+							</Anchors>
+						</Texture>
+						<Texture parentKey="BottomInner" file="Interface\GuildBankFrame\HorizTile" horizTile="true">
+							<Anchors>
+								<Anchor point="BOTTOMLEFT" relativeKey="$parent.BottomLeftInner" relativePoint="BOTTOMRIGHT" y="-5"/>
+								<Anchor point="BOTTOMRIGHT" relativeKey="$parent.BottomRightInner" relativePoint="BOTTOMLEFT" y="-5"/>
+							</Anchors>
+						</Texture>
+					</Layer>
+					<!-- Fond des colonnes -->
+					<Layer level="BACKGROUND">
+						<Texture parentKey="BG1" inherits="KervielGuildBankFrameColumnTemplate">
+							<Anchors>
+								<Anchor x="28" y="-55" />
+							</Anchors>
+						</Texture>
+						<Texture parentKey="BG2" inherits="KervielGuildBankFrameColumnTemplate">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.BG1" relativePoint="TOPRIGHT" x="3" y="0" />
+							</Anchors>
+						</Texture>
+						<Texture parentKey="BG3" inherits="KervielGuildBankFrameColumnTemplate">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.BG2" relativePoint="TOPRIGHT" x="3" y="0" />
+							</Anchors>
+						</Texture>
+						<Texture parentKey="BG4" inherits="KervielGuildBankFrameColumnTemplate">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.BG3" relativePoint="TOPRIGHT" x="3" y="0" />
+							</Anchors>
+						</Texture>
+						<Texture parentKey="BG5" inherits="KervielGuildBankFrameColumnTemplate">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.BG4" relativePoint="TOPRIGHT" x="3" y="0" />
+							</Anchors>
+						</Texture>
+						<Texture parentKey="BG6" inherits="KervielGuildBankFrameColumnTemplate">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.BG5" relativePoint="TOPRIGHT" x="3" y="0" />
+							</Anchors>
+						</Texture>
+						<Texture parentKey="BG7" inherits="KervielGuildBankFrameColumnTemplate">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.BG6" relativePoint="TOPRIGHT" x="3" y="0" />
+							</Anchors>
+						</Texture>
+					</Layer>
+				</Layers>
+			</Frame>
+			<Frame parentKey="above">
+				<Anchors>
+					<Anchor point="TOPLEFT" x="0" y="0"/>
+					<Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" x="0" y="-50"/>
+				</Anchors>
+				<Layers>
+					<Layer level="BORDER">
+						<FontString parentKey="tabsText" inherits="GameFontNormal" text="GUILDBANK_TAB_COLON">
+							<Anchors>
+								<Anchor point="TOPLEFT" x="30" y="-20"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Frames>
+					<Frame name="KervielGuildBankFrameDropDownMenu" parentKey="dropdown" inherits="UIDropDownMenuTemplate">
+						<Anchors>
+							<Anchor point="LEFT" relativeKey="$parent.tabsText" relativePoint="RIGHT" x="-10" y="-4"/>
+						</Anchors>
+					</Frame>
+				</Frames>
+			</Frame>
+		</Frames>
+		<Scripts>
+			<OnLoad>
+				self.bg:SetTexture('Interface\\GuildBankFrame\\GuildVaultBG', true, true)
+			</OnLoad>
+		</Scripts>
+	</Frame>
+
+	<!--
+	**************************************************************************
+	Chambre du vide
+	**************************************************************************
+	-->
+	<Button name="KervielVoidStorageItemButtonTemplate" inherits="KervielItemButtonTemplate" virtual="true">
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture file="Interface\VoidStorage\VoidStorage">
+					<Size x="41" y="41" />
+					<Anchors>
+						<Anchor point="CENTER" x="0" y="0" />
+					</Anchors>
+					<TexCoords left="0.6640625" right="0.744140625" top="0" bottom="0.08203125" />
+				</Texture>
+			</Layer>
+		</Layers>
+	</Button>
+	<Frame name="KervielVoidStorageFrameTemplate" inherits="KervielInsetFrameTemplate" topLevel="true" hidden="true" virtual="true">
+		<Size x="614" y="408"/>
+		<Layers>
+			<!-- Ajuste la texture de fond -->
+			<Layer level="BACKGROUND" textureSubLevel="1">
+				<Texture setAllPoints="true">
+					<Color r="0.302" g="0.102" b="0.204" a="0.5"/>
+				</Texture>
+			</Layer>
+			<!-- Bords -->
+			<Layer level="BORDER" textureSubLevel="1">
+				<Texture file="Interface\Transmogrify\VerticalTiles" vertTile="true">
+					<Size x="23" y="64"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" x="3" y="0"/>
+						<Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT" x="3" y="0"/>
+					</Anchors>
+					<TexCoords left="0.40625000" right="0.76562500" top="0.00000000" bottom="1.00000000"/>
+				</Texture>
+				<Texture file="Interface\Transmogrify\VerticalTiles" vertTile="true">
+					<Size x="23" y="64"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativePoint="BOTTOMRIGHT" x="-3" y="0"/>
+						<Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" x="-3" y="0"/>
+					</Anchors>
+					<TexCoords left="0.01562500" right="0.37500000" top="0.00000000" bottom="1.00000000"/>
+				</Texture>
+				<Texture file="Interface\Transmogrify\HorizontalTiles" horizTile="true">
+					<Size x="64" y="23"/>
+					<Anchors>
+						<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" x="0" y="2"/>
+						<Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMLEFT" x="0" y="2"/>
+					</Anchors>
+					<TexCoords left="0.00000000" right="1.00000000" top="0.01562500" bottom="0.37500000"/>
+				</Texture>
+				<Texture file="Interface\Transmogrify\HorizontalTiles" horizTile="true">
+					<Size x="64" y="23"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="0" y="-3"/>
+						<Anchor point="TOPRIGHT" x="0" y="-3"/>
+					</Anchors>
+					<TexCoords left="0.00000000" right="1.00000000" top="0.40625000" bottom="0.76562500"/>
+				</Texture>
+			</Layer>
+			<!-- Coins -->
+			<Layer level="BORDER" textureSubLevel="2">
+				<Texture file="Interface\Transmogrify\Textures">
+					<Size x="64" y="64" />
+					<Anchors>
+						<Anchor point="TOPLEFT" x="-2" y="2" />
+					</Anchors>
+					<TexCoords left="0.00781250" right="0.50781250" top="0.00195313" bottom="0.12695313"/>
+				</Texture>
+				<Texture file="Interface\Transmogrify\Textures">
+					<Size x="64" y="64" />
+					<Anchors>
+						<Anchor point="TOPRIGHT" x="2" y="2" />
+					</Anchors>
+					<TexCoords left="0.00781250" right="0.50781250" top="0.38476563" bottom="0.50781250"/>
+				</Texture>
+				<Texture file="Interface\Transmogrify\Textures">
+					<Size x="64" y="64"/>
+					<Anchors>
+						<Anchor point="BOTTOMLEFT" x="-2" y="-2"/>
+					</Anchors>
+					<TexCoords left="0.00781250" right="0.50781250" top="0.25781250" bottom="0.38085938"/>
+				</Texture>
+				<Texture file="Interface\Transmogrify\Textures">
+					<Size x="64" y="64"/>
+					<Anchors>
+						<Anchor point="BOTTOMRIGHT" x="2" y="-2"/>
+					</Anchors>
+					<TexCoords left="0.00781250" right="0.50781250" top="0.13085938" bottom="0.25390625"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame parentKey="contents" setAllPoints="true">
+				<Frames>
+					<Frame parentKey="inner" inherits="KervielInsetFrameNoShadowTemplate">
+						<Size x="481" y="347"/>
+						<Anchors>
+							<Anchor x="67" y="-30"/>
+						</Anchors>
+						<Layers>
+							<!-- Fond -->
+							<Layer level="BACKGROUND">
+								<Texture file="Interface\VoidStorage\VoidStorage" setAllPoints="true">
+									<TexCoords left="0.00195313" right="0.47265625" top="0.16601563" bottom="0.50781250"/>
+								</Texture>
+							</Layer>
+							<!-- Lignes séparatrices -->
+							<Layer level="ARTWORK">
+								<Texture>
+									<Size x="2" y="343"/>
+									<Anchors>
+										<Anchor point="TOPLEFT" relativeKey="$parent.bg" x="97" y="-2"/>
+									</Anchors>
+									<Color r="0.1451" g="0.0941" b="0.1373" a="0.8"/>
+								</Texture>
+								<Texture>
+									<Size x="2" y="343"/>
+									<Anchors>
+										<Anchor point="TOPLEFT" relativeKey="$parent.bg" x="192" y="-2"/>
+									</Anchors>
+									<Color r="0.1451" g="0.0941" b="0.1373" a="0.8"/>
+								</Texture>
+								<Texture>
+									<Size x="2" y="343"/>
+									<Anchors>
+										<Anchor point="TOPLEFT" relativeKey="$parent.bg" x="287" y="-2"/>
+									</Anchors>
+									<Color r="0.1451" g="0.0941" b="0.1373" a="0.8"/>
+								</Texture>
+								<Texture>
+									<Size x="2" y="343"/>
+									<Anchors>
+										<Anchor point="TOPLEFT" relativeKey="$parent.bg" x="382" y="-2"/>
+									</Anchors>
+									<Color r="0.1451" g="0.0941" b="0.1373" a="0.8"/>
+								</Texture>
+							</Layer>
+						</Layers>
+					</Frame>
+					<Button parentKey="prevButton" disabled="true">
+						<Size x="27" y="46"/>
+						<Anchors>
+							<Anchor point="RIGHT" relativeKey="$parent.inner" relativePoint="LEFT" x="0" y="0"/>
+						</Anchors>
+						<NormalTexture file="Interface\VoidStorage\VoidStorage">
+							<TexCoords left="0.80468750" right="0.85742188" top="0.00195313" bottom="0.09179688"/>
+						</NormalTexture>
+						<DisabledTexture file="Interface\VoidStorage\VoidStorage" desaturated="true">
+							<TexCoords left="0.80468750" right="0.85742188" top="0.00195313" bottom="0.09179688"/>
+						</DisabledTexture>
+					</Button>
+					<Button parentKey="nextButton" disabled="true">
+						<Size x="27" y="46"/>
+						<Anchors>
+							<Anchor point="LEFT" relativeKey="$parent.inner" relativePoint="RIGHT" x="-1" y="0"/>
+						</Anchors>
+						<NormalTexture file="Interface\VoidStorage\VoidStorage">
+							<TexCoords left="0.74804688" right="0.80078125" top="0.00195313" bottom="0.09179688"/>
+						</NormalTexture>
+						<DisabledTexture file="Interface\VoidStorage\VoidStorage" desaturated="true">
+							<TexCoords left="0.74804688" right="0.80078125" top="0.00195313" bottom="0.09179688"/>
+						</DisabledTexture>
+					</Button>
+				</Frames>
+			</Frame>
+		</Frames>
+		<Scripts>
+			<OnLoad>
+				self.bg:SetTexture('Interface\\Transmogrify\\EtherealLines', true, true)
+				self.bg:SetAlpha(0.3)
+			</OnLoad>
+		</Scripts>
+	</Frame>
+
+	<!--
+	**************************************************************************
+	Courrier
+	**************************************************************************
+	-->
+	<Button name="KervielMailItemButtonTemplate" inherits="KervielItemButtonTemplate" virtual="true">
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture file="Interface\Buttons\UI-EmptySlot-Disabled" alpha="0.8">
+					<Size x="37" y="37"/>
+					<Anchors>
+						<Anchor point="CENTER" x="0" y="0"/>
+					</Anchors>
+					<TexCoords left="0.1875" right="0.78125" top="0.1875" bottom="0.78125" />
+				</Texture>
+			</Layer>
+		</Layers>
+	</Button>
+	<Frame name="KervielMailTemplate" virtual="true">
+		<Size x="743" y="75" />
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture>
+					<Size x="630" y="2"/>
+					<Anchors>
+						<Anchor point="TOP" relativePoint="BOTTOM" x="0" y="2"/>
+					</Anchors>
+					<Color r="0.33" g="0.16" b="0" a="0.3"/>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<FontString parentKey="sender" inherits="GameFontNormal" justifyH="LEFT" text="SENDER">
+					<Size x="400" y="16" />
+					<Anchors>
+						<Anchor point="TOPLEFT" x="22" y="-4" />
+					</Anchors>
+				</FontString>
+				<FontString parentKey="daysLeft" inherits="GameFontNormal" justifyH="RIGHT" text="DAYSLEFT">
+					<Size x="200" y="16" />
+					<Anchors>
+						<Anchor point="TOPRIGHT" x="-22" y="-4" />
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+	</Frame>
+	<Frame name="KervielMailFrameTemplate" inherits="KervielInsetFrameTemplate" hidden="true" virtual="true">
+		<Size x="774" y="385"/>
+		<Frames>
+			<ScrollFrame parentKey="contents">
+				<Anchors>
+					<Anchor point="TOPLEFT" x="3" y="-3" />
+					<Anchor point="BOTTOMRIGHT" x="-22" y="2" />
+				</Anchors>
+				<Frames>
+					<Slider parentKey="ScrollBar" inherits="UIPanelStretchableArtScrollBarTemplate">
+						<Anchors>
+							<Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="0" y="-16"/>
+							<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" x="0" y="16"/>
+						</Anchors>
+					</Slider>
+				</Frames>
+				<Scripts>
+					<OnLoad>
+						ScrollFrame_OnLoad(self)
+					</OnLoad>
+					<OnVerticalScroll>
+					</OnVerticalScroll>
+				</Scripts>
+			</ScrollFrame>
+		</Frames>
+		<Scripts>
+			<OnLoad>
+				--self.bg:SetTexture('Interface\\MailFrame\\UI-MailFrameBG', true, true)
+				self.bg:SetTexture('Interface\\HelpFrame\\Tileable-Parchment', true, true)
+				self.bg:SetTexCoord(0, 320/512, 0, 356/512)
+			</OnLoad>
+		</Scripts>
+	</Frame>
+
+	<!--
+	**************************************************************************
+	Frame principale
+	**************************************************************************
+	-->
+	<Frame name="KervielMainFrameTemplate" inherits="BasicFrameTemplate" toplevel="true" hidden="true" enableMouse="true" virtual="true">
+		<Size x="231" y="71" />
+		<Anchors>
+			<Anchor point="CENTER" x="0" y="0"/>
+		</Anchors>
+		<Frames>
+			<Frame parentKey="info" inherits="KervielThinGoldEdgeTemplate">
+				<Anchors>
+					<Anchor point="BOTTOMLEFT" x="10" y="10"/>
+					<Anchor point="TOPRIGHT" relativePoint="BOTTOMRIGHT" x="-13" y="35"/>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString parentKey="text" inherits="GameFontNormal">
+							<Anchors>
+								<Anchor point="LEFT" x="10" y="0"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Frames>
+					<Frame parentKey="money" name="KervielMoneyFrame" inherits="SmallMoneyFrameTemplate" hidden="false"><!-- Nom requis -->
+						<Anchors>
+							<Anchor point="RIGHT" x="-10" y="-1"/>
+						</Anchors>
+					</Frame>
+				</Frames>
+			</Frame>
+			<Frame parentKey="sideBar" inherits="InsetFrameTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" x="10" y="-30" />
+					<Anchor point="BOTTOMRIGHT" relativeKey="$parent.info" relativePoint="TOPLEFT" x="200" y="6" />
+				</Anchors>
+				<Frames>
+					<Frame name="KervielMainFrameDropDownMenu" parentKey="dropdown" inherits="UIDropDownMenuTemplate">
+						<Anchors>
+							<Anchor point="TOP" x="0" y="-10"/>
+						</Anchors>
+					</Frame>
+				</Frames>
+				<Layers>
+					<Layer level="BORDER">
+						<Texture parentKey="sep" file="Interface\HelpFrame\CS_HelpTextures" desaturated="true">
+							<Size x="170" y="25"/>
+							<Anchors>
+								<Anchor point="TOP" relativeKey="$parent.dropdown" relativePoint="BOTTOM" x="0" y="0"/>
+							</Anchors>
+							<TexCoords left="0.00195313" right="0.44921875" top="0.00781250" bottom="0.35937500"/>
+						</Texture>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnLoad>
+						self.Bg:SetTexture("Interface\\FrameGeneral\\UI-Background-Rock", true, true)
+						self.Bg:SetDesaturated(true)
+						self.Bg:SetVertexColor(0.7, 0.5, 0.3)
+					</OnLoad>
+				</Scripts>
+			</Frame>
+			<Frame parentKey="contents" inherits="InsetFrameTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.sideBar" relativePoint="TOPRIGHT" x="8" y="0" />
+					<Anchor point="BOTTOMRIGHT" relativeKey="$parent.info" relativePoint="TOPRIGHT" x="0" y="6"/>
+				</Anchors>
+			</Frame>
+		</Frames>
+	</Frame>
+</Ui>
