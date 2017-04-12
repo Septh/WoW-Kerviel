@@ -1,14 +1,13 @@
 
+-- Données pour le module
+local storeInfo = {
+	order = 10,
+}
+
 -- Environnement
 local Kerviel = LibStub('AceAddon-3.0'):GetAddon('Kerviel')
-local module  = Kerviel:NewModule('Equipment')
+local store   = Kerviel:NewStore('Equipment', storeInfo)
 local L       = LibStub('AceLocale-3.0'):GetLocale('Kerviel')
-
--- Données pour le module
-module.storeInfo = {
-	-- Module
-	order = 1,
-}
 
 -- Données
 local FIRST_EQUIPMENT_SLOT = _G.INVSLOT_FIRST_EQUIPPED
@@ -24,12 +23,12 @@ local ns_defaults = {
 -------------------------------------------------------------------------------
 -- Gestion du module
 -------------------------------------------------------------------------------
-function module:IsStorageAvailable(charKey)
+function store:IsStorageAvailableFor(charKey)
 	local sv = rawget(self.db, 'sv')
 	return sv.char and sv.char[charKey] and sv.char[charKey].slots
 end
 
-function module:GetData(charKey)
+function store:GetDataFor(charKey)
 	local sv = rawget(self.db, 'sv')
 	return sv.char and sv.char[charKey]
 end
@@ -37,10 +36,10 @@ end
 -------------------------------------------------------------------------------
 -- Recherche d'objet
 -------------------------------------------------------------------------------
-function module:SearchInChar(charKey, itemID)
+function store:SearchInChar(charKey, itemID)
 	local results, found = nil, 0
 
-	local charData = self:GetData(charKey)
+	local charData = self:GetDataFor(charKey)
 	if charData and charData.slots then
 		for i = FIRST_EQUIPMENT_SLOT, LAST_EQUIPMENT_SLOT do
 			local id, num = self:GetItem(charData.slots, i)
@@ -60,7 +59,7 @@ end
 -------------------------------------------------------------------------------
 -- Gestion de l'équipement
 -------------------------------------------------------------------------------
-function module:PLAYER_EQUIPMENT_CHANGED(evt, arg1)
+function store:PLAYER_EQUIPMENT_CHANGED(evt, arg1)
 	arg1 = tonumber(arg1)
 	local itemID = GetInventoryItemID('player', arg1)
 	self:PutItem(self.db.char.slots, arg1, itemID, 1)
@@ -69,14 +68,7 @@ end
 -------------------------------------------------------------------------------
 -- Initialisation
 -------------------------------------------------------------------------------
-function module:OnInitialize()
-
-	-- Initialise les données sauvegardées
-	self.db = Kerviel.db:RegisterNamespace(self:GetName(), ns_defaults)
-end
-
--------------------------------------------------------------------------------
-function module:OnEnable()
+function store:OnEnable()
 
 	-- Ecoute les événements
 	self:RegisterEvent('PLAYER_EQUIPMENT_CHANGED')
@@ -85,4 +77,11 @@ function module:OnEnable()
 	for i = FIRST_EQUIPMENT_SLOT, LAST_EQUIPMENT_SLOT do
 		self:PLAYER_EQUIPMENT_CHANGED(nil, i)
 	end
+end
+
+-------------------------------------------------------------------------------
+function store:OnInitialize()
+
+	-- Initialise les données sauvegardées de ce module
+	self.db = Kerviel.db:RegisterNamespace(self:GetName(), ns_defaults)
 end

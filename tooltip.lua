@@ -6,19 +6,19 @@ local L           = LibStub('AceLocale-3.0'):GetLocale('Kerviel')
 local LibExtraTip = LibStub('LibExtraTip-1')
 
 -- Données
-local SHOW_NOT     = 0
-local SHOW_SELF    = 1
-local SHOW_FACTION = 2
-local SHOW_REALM   = 3
-local SHOW_ALL     = 4
+local SHOW_NOT     = 0		-- Ne pas montrer dans le tooltip
+local SHOW_SELF    = 1		-- Personnage courant seulement
+local SHOW_FACTION = 2		-- Tous les personnages de la même faction (limité au royaume courant)
+local SHOW_REALM   = 3		-- Tous les personnages du royaume courant
+local SHOW_ALL     = 4		-- Tous les personnages de tous les royaumes
 
 local itemBindings = {
-	[_G.ITEM_SOULBOUND]           = SHOW_NOT,		-- Lié
-	[_G.ITEM_CONJURED]            = SHOW_NOT,		-- Objet invoqué
-	[_G.ITEM_BIND_QUEST]          = SHOW_NOT,		-- Objet de quête
-	[_G.ITEM_BIND_ON_PICKUP]      = SHOW_REALM,		-- lié quand ramassé
-	[_G.ITEM_BIND_ON_EQUIP]       = SHOW_REALM,		-- Lié quand équipé
-	[_G.ITEM_BIND_ON_USE]         = SHOW_REALM,		-- Lié quand utilisé
+	[_G.ITEM_SOULBOUND]           = SHOW_SELF,		-- Lié
+	[_G.ITEM_CONJURED]            = SHOW_FACTION,	-- Objet invoqué
+	[_G.ITEM_BIND_QUEST]          = SHOW_SELF,		-- Objet de quête
+	[_G.ITEM_BIND_ON_PICKUP]      = SHOW_SELF,		-- lié quand ramassé
+	[_G.ITEM_BIND_ON_EQUIP]       = SHOW_FACTION,	-- Lié quand équipé
+	[_G.ITEM_BIND_ON_USE]         = SHOW_FACTION,	-- Lié quand utilisé
 	[_G.ITEM_ACCOUNTBOUND]        = SHOW_ALL,		-- Lié au compte
 	[_G.ITEM_BIND_TO_ACCOUNT]     = SHOW_ALL,		-- Lié au compte
 	[_G.ITEM_BIND_TO_BNETACCOUNT] = SHOW_ALL,		-- Lié au compte Battle.net
@@ -42,7 +42,7 @@ local function AugmentTooltip(tooltip, itemLink, quantity, ...)
 	numResults   = 0
 
 	local itemID = Kerviel:ItemIDFromLink(itemLink)
-	for _, store in ipairs(Kerviel.stores) do
+	for _, store in Kerviel:IterateStores() do
 		if store.SearchInChar then
 			for charKey, charData in pairs(sv.char or EmptyTable) do
 				local num, sources = store:SearchInChar(charKey, itemID)
@@ -67,12 +67,14 @@ local function AugmentTooltip(tooltip, itemLink, quantity, ...)
 
 	-- Ajoute les résultats au tooltip
 	if numResults > 0 then
-		-- Scanne le tooltip pour déterminer s'il faut ajouter les infos pour cet objet
+		-- Scanne le tooltip pour déterminer quelles infos ajouter pour cet objet
 		local showInfo
 		if IsAltKeyDown() then
 			showInfo = SHOW_ALL
-		else
+		elseif IsShiftKeyDown() then
 			showInfo = SHOW_FACTION
+		else
+			showInfo = SHOW_REALM
 			for i = 1, tooltip:NumLines() do
 				local line = _G[tooltip:GetName() .. 'TextLeft' .. i]:GetText() or ''
 				if itemBindings[line] then
@@ -160,14 +162,6 @@ end
 -------------------------------------------------------------------------------
 -- Initialisation
 -------------------------------------------------------------------------------
-function module:OnInitialize()
-
-	-- Initialise LibExtraTip
-	LibExtraTip:RegisterTooltip(GameTooltip)
-	LibExtraTip:AddCallback(AugmentTooltip, 400)	-- Informant se met au niveau 300
-end
-
--------------------------------------------------------------------------------
 function module:OnEnable()
 
 	-- Recense et trie tous les personnages connus
@@ -187,7 +181,7 @@ function module:OnEnable()
 			sortedChars[realm] = { charKey }
 		end
 
-		-- guildes
+		-- Guildes
 		if charData.guild then
 			name, realm = Kerviel:SplitCharKey(charData.guild)
 			if sortedGuilds[realm] then
@@ -218,4 +212,12 @@ function module:OnEnable()
 			criteria = Kerviel.playerGuildKey; table.sort(sortedGuilds[realm] or EmptyTable, sorterFunc)
 		end
 	end
+end
+
+-------------------------------------------------------------------------------
+function module:OnInitialize()
+
+	-- Initialise LibExtraTip
+	LibExtraTip:RegisterTooltip(GameTooltip)
+	LibExtraTip:AddCallback(AugmentTooltip, 400)	-- Informant se met au niveau 300
 end

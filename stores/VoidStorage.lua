@@ -1,18 +1,16 @@
 
+-- Données pour le module
+local storeInfo = {
+	order  = 70,
+	framed = true,
+	text   = _G.VOID_STORAGE,
+	icon   = 'Interface\\AddOns\\Kerviel\\img\\Void',
+}
+
 -- Environnement
 local Kerviel = LibStub('AceAddon-3.0'):GetAddon('Kerviel')
-local module  = Kerviel:NewModule('VoidStorage')
+local store   = Kerviel:NewStore('VoidStorage', storeInfo)
 local L       = LibStub('AceLocale-3.0'):GetLocale('Kerviel')
-
--- Données pour le module
-module.storeInfo = {
-	-- Module
-	order = 30,
-	framed = true,
-	-- Storage
-	text  = _G.VOID_STORAGE,
-	icon  = 'Interface\\AddOns\\Kerviel\\img\\Void',
-}
 
 -- Donnés
 local NUM_BLOCKS            = 5
@@ -34,23 +32,23 @@ local ns_defaults = {
 }
 
 -------------------------------------------------------------------------------
--- Gestion du module
+-- Gestion du store
 -------------------------------------------------------------------------------
-function module:IsStorageAvailable(charKey)
+function store:IsStorageAvailableFor(charKey)
 	local sv = rawget(self.db, 'sv')
 	return sv.char and sv.char[charKey] and sv.char[charKey].pages
 end
 
-function module:ChangeDisplayedCharacter(charKey)
+function store:ChangeDisplayedCharacter(charKey)
 	self:UpdateFrame(charKey)
 end
 
-function module:GetData(charKey)
+function store:GetDataFor(charKey)
 	local sv = rawget(self.db, 'sv')
 	return sv.char and sv.char[charKey]
 end
 
-function module:GetFrame()
+function store:GetFrame()
 	if not frame then self:CreateFrame() end
 	return frame
 end
@@ -58,10 +56,10 @@ end
 -------------------------------------------------------------------------------
 -- Recherche d'objet
 -------------------------------------------------------------------------------
-function module:SearchInChar(charKey, itemID)
+function store:SearchInChar(charKey, itemID)
 	local results, found = nil, 0
 
-	local charData = self:GetData(charKey)
+	local charData = self:GetDataFor(charKey)
 	if charData and charData.pages then
 		for page = 1, NUM_VOIDSTORAGE_PAGES do
 			local pageData = charData.pages[page] or self.EmptyTable
@@ -88,7 +86,7 @@ end
 -------------------------------------------------------------------------------
 -- Gestion de la fenêtre
 -------------------------------------------------------------------------------
-function module:UpdateFrame(charKey)
+function store:UpdateFrame(charKey)
 
 	-- Rien à faire si la frame n'est pas affichée
 	if not frame or not frame:IsVisible() then return end
@@ -101,7 +99,7 @@ function module:UpdateFrame(charKey)
 	end
 
 	-- Trouve la DB pour le personnage demandé
-	local charData = self:GetData(charKey)
+	local charData = self:GetDataFor(charKey)
 	if charData and charData.pages then
 		frame.error:Hide()
 		frame.contents:Show()
@@ -116,7 +114,7 @@ function module:UpdateFrame(charKey)
 
 		-- Redessine les 80 slots
 		for i = 1, NUM_VOIDSTORAGE_SLOTS do
-			Kerviel:UpdateItemButton(buttons[i], self:GetItem(charData.pages[displayedPage].slots, i))
+			self:UpdateItemButton(buttons[i], self:GetItem(charData.pages[displayedPage].slots, i))
 		end
 	elseif charData and not charData.unlocked then
 		frame.contents:Hide()
@@ -130,25 +128,25 @@ function module:UpdateFrame(charKey)
 end
 
 -------------------------------------------------------------------------------
-function PrevButton_Click()
+local function PrevButton_Click()
 	if displayedPage > 1 then
 		displayedPage = displayedPage - 1
-		module:UpdateFrame(Kerviel.displayedCharKey)
+		store:UpdateFrame(Kerviel.displayedCharKey)
 	end
 end
 
-function NextButton_Click()
+local function NextButton_Click()
 	if displayedPage < NUM_VOIDSTORAGE_PAGES then
 		displayedPage = displayedPage + 1
-		module:UpdateFrame(Kerviel.displayedCharKey)
+		store:UpdateFrame(Kerviel.displayedCharKey)
 	end
 end
 
-function Frame_OnShow()
-	module:UpdateFrame(Kerviel.displayedCharKey)
+local function Frame_OnShow()
+	store:UpdateFrame(Kerviel.displayedCharKey)
 end
 
-function module:CreateFrame()
+function store:CreateFrame()
 
 	-- Crée la frame
 	frame = CreateFrame('Frame', nil, nil, 'KervielVoidStorageFrameTemplate')
@@ -183,8 +181,7 @@ end
 -------------------------------------------------------------------------------
 -- Gestion de la chambre du vide
 -------------------------------------------------------------------------------
-function module:VOID_STORAGE_CONTENTS_UPDATE(evt)
-	self.db.char.unlocked = CanUseVoidStorage()
+function store:VOID_STORAGE_CONTENTS_UPDATE(evt)
 	if self.db.char.unlocked then
 		self.db.char.pages = Kerviel:AssertTable(self.db.char.pages)
 
@@ -196,30 +193,28 @@ function module:VOID_STORAGE_CONTENTS_UPDATE(evt)
 				local changed = self:PutItem(self.db.char.pages[i].slots, j, id, 1)
 
 				if changed and frame and frame:IsVisible() and i == displayedPage and Kerviel.displayedCharKey == Kerviel.playerCharKey then
-					Kerviel:UpdateItemButton(buttons[j], self:GetItem(self.db.char.pages[i].slots, j))
+					self:UpdateItemButton(buttons[j], self:GetItem(self.db.char.pages[i].slots, j))
 				end
 			end
 		end
 	end
 
 	-- Prévient la fenêtre principale de rafraîchir son menu
-	Kerviel.callbacks:Fire('StorageChanged', self:GetName())
+	self:NotifyChange()
 end
 
 -------------------------------------------------------------------------------
-function module:VOID_STORAGE_UPDATE(evt)
-	if IsVoidStorageReady() then
-		-- self:VOID_STORAGE_CONTENTS_UPDATE(evt)
-	end
+function store:VOID_STORAGE_UPDATE(evt)
+	self.db.char.unlocked = CanUseVoidStorage()
 end
 
 -------------------------------------------------------------------------------
-function module:VOID_TRANSFER_DONE(evt)
+function store:VOID_TRANSFER_DONE(evt)
 	self:VOID_STORAGE_CONTENTS_UPDATE(evt)
 end
 
 -------------------------------------------------------------------------------
-function module:VOID_STORAGE_OPEN(evt)
+function store:VOID_STORAGE_OPEN(evt)
 	if IsVoidStorageReady() then
 		self:VOID_STORAGE_CONTENTS_UPDATE(evt)
 	end
@@ -228,14 +223,7 @@ end
 -------------------------------------------------------------------------------
 -- Initialisation
 -------------------------------------------------------------------------------
-function module:OnInitialize()
-
-	-- Initialise les données sauvegardées
-	self.db = Kerviel.db:RegisterNamespace(self:GetName(), ns_defaults)
-end
-
--------------------------------------------------------------------------------
-function module:OnEnable()
+function store:OnEnable()
 
 	-- Ecoute les événements
 	self:RegisterEvent('VOID_STORAGE_OPEN')
@@ -245,4 +233,11 @@ function module:OnEnable()
 
 	-- Pas dispo avant PLAYER_ENTERING_WORLD
 	self.db.char.unlocked = CanUseVoidStorage()
+end
+
+-------------------------------------------------------------------------------
+function store:OnInitialize()
+
+	-- Initialise les données sauvegardées
+	self.db = Kerviel.db:RegisterNamespace(self:GetName(), ns_defaults)
 end

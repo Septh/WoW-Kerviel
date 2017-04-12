@@ -1,4 +1,4 @@
-## Interface: 70100
+## Interface: 70200
 ## Title: Kerviel
 ## Notes: Your Bank Warrior
 ## Version: 1.0.0
@@ -6,15 +6,17 @@
 ## OptionalDeps: !Swatter
 ## SavedVariables: KervielDB
 
-# Ace3
+# LibStub
 Libs\LibStub\LibStub.lua
+
+# Ace3
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
 Libs\AceAddon-3.0\AceAddon-3.0.xml
 Libs\AceConsole-3.0\AceConsole-3.0.xml
 Libs\AceEvent-3.0\AceEvent-3.0.xml
 Libs\AceHook-3.0\AceHook-3.0.xml
 Libs\AceLocale-3.0\AceLocale-3.0.xml
-# Utilise une version personnalisée de AceDB-3.0
+# Utilise une version modifiée de AceDB-3.0
 AceDB-3.0-GuildMod.lua
 
 # LibExtraTip
@@ -27,14 +29,15 @@ locales\fr.lua
 # Core
 Kerviel.xml
 Kerviel.lua
-common.lua
-tooltip.lua
+MainUI.lua
+Tooltip.lua
 
 # Stores
+#StoreAPI.lua
 stores\Equipment.lua
 stores\Bags.lua
 stores\Bank.lua
 stores\ReagentBank.lua
-stores\VoidStorage.lua
 stores\GuildBank.lua
 stores\Mail.lua
+stores\VoidStorage.lua

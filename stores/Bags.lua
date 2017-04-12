@@ -1,14 +1,13 @@
 
+-- Données pour le module
+local storeInfo = {
+	order = 20,
+}
+
 -- Environnement
 local Kerviel = LibStub('AceAddon-3.0'):GetAddon('Kerviel')
-local module  = Kerviel:NewModule('Bags')
+local store   = Kerviel:NewStore('Bags', storeInfo)
 local L       = LibStub('AceLocale-3.0'):GetLocale('Kerviel')
-
--- Données pour le module
-module.storeInfo = {
-	-- Module
-	order = 2,
-}
 
 -- Données
 local FIRST_BAG = _G.BACKPACK_CONTAINER
@@ -26,12 +25,12 @@ local ns_defaults = {
 -------------------------------------------------------------------------------
 -- Gestion du module
 -------------------------------------------------------------------------------
-function module:IsStorageAvailable(charKey)
+function store:IsStorageAvailableFor(charKey)
 	local sv = rawget(self.db, 'sv')
 	return sv.char and sv.char[charKey] and sv.char[charKey].bags
 end
 
-function module:GetData(charKey)
+function store:GetDataFor(charKey)
 	local sv = rawget(self.db, 'sv')
 	return sv.char and sv.char[charKey]
 end
@@ -39,10 +38,10 @@ end
 -------------------------------------------------------------------------------
 -- Recherche d'objet
 -------------------------------------------------------------------------------
-function module:SearchInChar(charKey, itemID)
+function store:SearchInChar(charKey, itemID)
 	local results, found = nil, 0
 
-	local charData = self:GetData(charKey)
+	local charData = self:GetDataFor(charKey)
 	if charData and charData.bags then
 		for i = FIRST_BAG, LAST_BAG do
 			local bagData = charData.bags[i + 1] or self.EmptyTable
@@ -68,26 +67,25 @@ end
 -------------------------------------------------------------------------------
 -- Gestion du contenu des sacs
 -------------------------------------------------------------------------------
-function module:SaveBag(bagNum)
+function store:SaveBag(bagNum)
 	local containerID = bagNum
 	local bagItemID   = bagNum == 0 and 'Backpack' or GetInventoryItemID('player', ContainerIDToInventoryID(containerID))
 	local bagSize     = GetContainerNumSlots(containerID)
 	local bagFree     = GetContainerNumFreeSlots(containerID)
-
-	-- Les emplacements sont numérotés à partir de 1 dans la DB
-	bagNum = bagNum + 1
+	bagNum = bagNum + 1	-- Les emplacements sont numérotés à partir de 1 dans la DB
 
 	-- Sauve le contenu du sac
 	if bagItemID then
 		self.db.char.bags[bagNum] = Kerviel:AssertTable(self.db.char.bags[bagNum])
+		self.db.char.bags[bagNum].id   = bagItemID
+		self.db.char.bags[bagNum].size = bagSize
+
+		-- Sauve le contenu du sac
 		self.db.char.bags[bagNum].slots = Kerviel:AssertTable(self.db.char.bags[bagNum].slots)
 		for i = 1, math.max(bagSize, self.db.char.bags[bagNum].size or 0) do
 			self:PutContainerItem(containerID, i, self.db.char.bags[bagNum].slots)
 		end
 
-		-- Sauve l'ID et la taille du sac lui-même
-		self.db.char.bags[bagNum].id   = bagItemID
-		self.db.char.bags[bagNum].size = bagSize
 		if bagFree == bagSize then
 			-- Sac vide
 			Kerviel:DelTable(self.db.char.bags[bagNum].slots)
@@ -98,12 +96,10 @@ function module:SaveBag(bagNum)
 		Kerviel:DelTable(self.db.char.bags[bagNum])
 		self.db.char.bags[bagNum] = nil
 	end
-
-	return true
 end
 
 -------------------------------------------------------------------------------
-function module:BAG_UPDATE_DELAYED(evt)
+function store:BAG_UPDATE_DELAYED(evt)
 	-- First In, First Out
 	for i, bagNum in ipairs(delayedBagUpdates) do
 		self:SaveBag(bagNum)
@@ -112,7 +108,7 @@ function module:BAG_UPDATE_DELAYED(evt)
 end
 
 -------------------------------------------------------------------------------
-function module:BAG_UPDATE(evt, arg1)
+function store:BAG_UPDATE(evt, arg1)
 	local bagNum = tonumber(arg1)
 	if bagNum >= FIRST_BAG and bagNum <= LAST_BAG then
 		-- L'événement peut surgir plusieurs fois pour un même sac,
@@ -126,7 +122,7 @@ end
 -------------------------------------------------------------------------------
 -- Initialisation
 -------------------------------------------------------------------------------
-function module:OnInitialize()
+function store:OnInitialize()
 
 	-- Initialise les données sauvegardées
 	self.db = Kerviel.db:RegisterNamespace(self:GetName(), ns_defaults)
@@ -134,7 +130,7 @@ function module:OnInitialize()
 end
 
 -------------------------------------------------------------------------------
-function module:OnEnable()
+function store:OnEnable()
 
 	-- Sauve le contenu de tous les sacs
 	for i = FIRST_BAG, LAST_BAG do

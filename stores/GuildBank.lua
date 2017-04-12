@@ -1,18 +1,16 @@
 
+-- Données pour le module
+local storeInfo = {
+	order  = 60,
+	framed = true,
+	text   = _G.GUILD_BANK,
+	icon   = 'Interface\\AddOns\\Kerviel\\img\\GuildBank',
+}
+
 -- Environnement
 local Kerviel = LibStub('AceAddon-3.0'):GetAddon('Kerviel')
-local module  = Kerviel:NewModule('GuildBank', 'AceHook-3.0')
+local store   = Kerviel:NewStore('GuildBank', storeInfo, 'AceHook-3.0')
 local L       = LibStub('AceLocale-3.0'):GetLocale('Kerviel')
-
--- Données pour le module
-module.storeInfo = {
-	-- Module
-	order = 40,
-	framed = true,
-	-- Bouton
-	text  = _G.GUILD_BANK,
-	icon  = 'Interface\\AddOns\\Kerviel\\img\\GuildBank',
-}
 
 -- Donnés
 local NUM_BLOCKS            = 7
@@ -34,24 +32,24 @@ local ns_defaults = {
 }
 
 -------------------------------------------------------------------------------
--- Gestion du module
+-- Gestion du store
 -------------------------------------------------------------------------------
-function module:IsStorageAvailable(charKey)
+function store:IsStorageAvailableFor(charKey)
 	local guildKey = Kerviel:GetGuildKey(charKey)
-	local guildData = guildKey and self:GetData(guildKey)
+	local guildData = guildKey and self:GetDataFor(guildKey)
 	return guildData and guildData.tabs
 end
 
-function module:ChangeDisplayedCharacter(charKey)
+function store:ChangeDisplayedCharacter(charKey)
 	self:UpdateFrame(charKey)
 end
 
-function module:GetData(guildKey)
+function store:GetDataFor(guildKey)
 	local sv = rawget(self.db, 'sv')
 	return sv.guild and sv.guild[guildKey]
 end
 
-function module:GetFrame()
+function store:GetFrame()
 	if not frame then self:CreateFrame() end
 	return frame
 end
@@ -59,10 +57,10 @@ end
 -------------------------------------------------------------------------------
 -- Recherche d'objet
 -------------------------------------------------------------------------------
-function module:SearchInGuild(guildKey, itemID)
+function store:SearchInGuild(guildKey, itemID)
 	local results, found = nil, 0
 
-	local guildData = self:GetData(guildKey)
+	local guildData = self:GetDataFor(guildKey)
 	if guildData and guildData.tabs then
 		for tab = 1, 8 do
 			local tabData = guildData.tabs[tab] or self.EmptyTable
@@ -89,7 +87,7 @@ end
 -------------------------------------------------------------------------------
 -- Gestion de la fenêtre
 -------------------------------------------------------------------------------
-function module:UpdateFrame(charKey)
+function store:UpdateFrame(charKey)
 
 	-- Rien à faire si la frame n'est pas affichée
 	if not frame or not frame:IsVisible() then return end
@@ -104,7 +102,7 @@ function module:UpdateFrame(charKey)
 	-- Trouve la guide à afficher
 	local guildKey = Kerviel:GetGuildKey(charKey)
 	if guildKey then
-		local guildData = self:GetData(guildKey)
+		local guildData = self:GetDataFor(guildKey)
 		if guildData and guildData.tabs then
 
 			-- Nom de la guide
@@ -121,7 +119,7 @@ function module:UpdateFrame(charKey)
 			-- Le contenu
 			if guildData.tabs[tab] and guildData.tabs[tab].slots then
 				for i = 1, NUM_GUILDBANK_SLOTS do
-					Kerviel:UpdateItemButton(buttons[i], self:GetItem(guildData.tabs[tab].slots, i))
+					self:UpdateItemButton(buttons[i], self:GetItem(guildData.tabs[tab].slots, i))
 				end
 				frame.contents:Show()
 				frame.error:Hide()
@@ -152,13 +150,13 @@ end
 
 -------------------------------------------------------------------------------
 local function Frame_OnShow(frame)
-	module:UpdateFrame(Kerviel.displayedCharKey)
+	store:UpdateFrame(Kerviel.displayedCharKey)
 end
 
 -------------------------------------------------------------------------------
 local function TabsDropDown_OnClick(entry, arg1, arg2, checked)
 	UIDropDownMenu_SetSelectedValue(tabsDropDown, entry.value)
-	module:UpdateFrame(Kerviel.displayedCharKey)
+	store:UpdateFrame(Kerviel.displayedCharKey)
 end
 
 local function TabsDropDown_Checked(entry)
@@ -166,7 +164,7 @@ local function TabsDropDown_Checked(entry)
 end
 
 local function TabsDropDown_Initialize()
-	local sv = rawget(module.db, 'sv')
+	local sv = rawget(store.db, 'sv')
 	local guildKey = Kerviel:GetGuildKey(Kerviel.displayedCharKey)
 	local guildData = guildKey and sv.guild and sv.guild[guildKey]
 
@@ -188,7 +186,7 @@ local function TabsDropDown_Initialize()
 end
 
 -------------------------------------------------------------------------------
-function module:UIDropDownMenu_RefreshDropDownSize(dropDownListFrame)
+function store:UIDropDownMenu_RefreshDropDownSize(dropDownListFrame)
 
 	-- HACK --
 	-- Redessine le menu avec des entrées et des icônes plus grandes
@@ -217,7 +215,7 @@ function module:UIDropDownMenu_RefreshDropDownSize(dropDownListFrame)
 end
 
 -------------------------------------------------------------------------------
-function module:CreateFrame()
+function store:CreateFrame()
 
 	-- Crée la frame
 	frame = CreateFrame('Frame', nil, nil, 'KervielGuildBankFrameTemplate')
@@ -268,7 +266,7 @@ end
 -- Gestion de la banque de guilde
 -------------------------------------------------------------------------------
 local pickupTab, pickupSlot, pickupCount
-function module:SplitGuildBankItem(tab, slot, count)
+function store:SplitGuildBankItem(tab, slot, count)
 
 	-- 1ère étape du déplacement... On mémorise simplement l'action
 	if not pickupTab then
@@ -300,12 +298,12 @@ function module:SplitGuildBankItem(tab, slot, count)
 	pickupTab, pickupSlot, pickupCount = nil, nil, nil
 end
 
-function module:PickupGuildBankItem(tab, slot)
+function store:PickupGuildBankItem(tab, slot)
 	local _, count = self:GetItem(self.db.guild.tabs[tab].slots, slot)
 	return self:SplitGuildBankItem(tab, slot, count or 0)
 end
 
-function module:GUILDBANK_ITEM_LOCK_CHANGED(evt)
+function store:GUILDBANK_ITEM_LOCK_CHANGED(evt)
 	-- Permet de gérer l'annulation du déplacement d'un item
 	if IsMouseButtonDown('RightButton') then
 		pickupTab, pickupSlot, pickupCount = nil, nil, nil
@@ -313,7 +311,7 @@ function module:GUILDBANK_ITEM_LOCK_CHANGED(evt)
 end
 
 -------------------------------------------------------------------------------
-function module:GUILDBANKBAGSLOTS_CHANGED(evt)
+function store:GUILDBANKBAGSLOTS_CHANGED(evt)
 
 	-- Sauve le contenu de l'onglet affiché
 	local tab = GetCurrentGuildBankTab()
@@ -330,16 +328,16 @@ function module:GUILDBANKBAGSLOTS_CHANGED(evt)
 
 	-- Redessine la fenêtre et met à jour le menu principal
 	self:UpdateFrame()
-	Kerviel.callbacks:Fire('StorageChanged', self:GetName())
+	self:NotifyChange()
 end
 
 -------------------------------------------------------------------------------
-function module:GUILDBANKFRAME_OPENED(evt)
+function store:GUILDBANKFRAME_OPENED(evt)
 	self:GUILDBANKBAGSLOTS_CHANGED(evt)
 end
 
 -------------------------------------------------------------------------------
-function module:GUILDBANK_UPDATE_TABS(evt)
+function store:GUILDBANK_UPDATE_TABS(evt)
 
 	-- Sauve les droits d'accès aux onglets dans la DB du personnage
 	self.db.char.tabsview = 0
@@ -365,14 +363,14 @@ end
 -------------------------------------------------------------------------------
 -- Initialisation
 -------------------------------------------------------------------------------
-function module:OnInitialize()
+function store:OnInitialize()
 
 	-- Initialise les données sauvegardées
 	self.db = Kerviel.db:RegisterNamespace(self:GetName(), ns_defaults)
 end
 
 -------------------------------------------------------------------------------
-function module:OnEnable()
+function store:OnEnable()
 
 	-- Ecoute les événements
 	self:RegisterEvent('GUILDBANKFRAME_OPENED')

@@ -1,18 +1,16 @@
 
+-- Données pour le module
+local storeInfo = {
+	order  = 40,
+	framed = true,
+	text   = _G.REAGENT_BANK,
+	icon   = 'Interface\\AddOns\\Kerviel\\img\\Reagent',
+}
+
 -- Environnement
 local Kerviel = LibStub('AceAddon-3.0'):GetAddon('Kerviel')
-local module  = Kerviel:NewModule('ReagentBank')
+local store   = Kerviel:NewStore('ReagentBank', storeInfo)
 local L       = LibStub('AceLocale-3.0'):GetLocale('Kerviel')
-
--- Données pour le module
-module.storeInfo = {
-	-- Module
-	order = 20,
-	framed = true,
-	-- Bouton
-	text  = _G.REAGENT_BANK,
-	icon  = 'Interface\\AddOns\\Kerviel\\img\\Reagent',
-}
 
 -- Donnés
 local NUM_BLOCKS            = 7
@@ -32,23 +30,23 @@ local ns_defaults = {
 }
 
 -------------------------------------------------------------------------------
--- Gestion du module
+-- Gestion du store
 -------------------------------------------------------------------------------
-function module:IsStorageAvailable(charKey)
+function store:IsStorageAvailableFor(charKey)
 	local sv = rawget(self.db, 'sv')
 	return sv.char and sv.char[charKey] and sv.char[charKey].slots
 end
 
-function module:ChangeDisplayedCharacter(charKey)
+function store:ChangeDisplayedCharacter(charKey)
 	self:UpdateFrame(charKey)
 end
 
-function module:GetData(charKey)
+function store:GetDataFor(charKey)
 	local sv = rawget(self.db, 'sv')
 	return sv.char and sv.char[charKey]
 end
 
-function module:GetFrame()
+function store:GetFrame()
 	if not frame then self:CreateFrame() end
 	return frame
 end
@@ -56,10 +54,10 @@ end
 -------------------------------------------------------------------------------
 -- Recherche d'objet
 -------------------------------------------------------------------------------
-function module:SearchInChar(charKey, itemID)
+function store:SearchInChar(charKey, itemID)
 	local results, found = nil, 0
 
-	local charData = self:GetData(charKey)
+	local charData = self:GetDataFor(charKey)
 	if charData and charData.slots then
 		for i = 1, NUM_REAGENTBANK_SLOTS do
 			local id, num = self:GetItem(charData.slots, i)
@@ -79,7 +77,7 @@ end
 -------------------------------------------------------------------------------
 -- Gestion de la fenêtre
 -------------------------------------------------------------------------------
-function module:UpdateFrame(charKey)
+function store:UpdateFrame(charKey)
 
 	-- Rien à faire si la frame n'est pas affichée
 	if not frame or not frame:IsVisible() then return end
@@ -92,14 +90,14 @@ function module:UpdateFrame(charKey)
 	end
 
 	-- Trouve la DB pour le personnage demandé
-	local charData = self:GetData(charKey)
+	local charData = self:GetDataFor(charKey)
 	if charData and charData.slots then
 		frame.error:Hide()
 		frame.contents:Show()
 
 		-- Redessine les 98 slots
 		for i = 1, NUM_REAGENTBANK_SLOTS do
-			Kerviel:UpdateItemButton(buttons[i], self:GetItem(charData.slots, i))
+			self:UpdateItemButton(buttons[i], self:GetItem(charData.slots, i))
 		end
 	elseif charData and not charData.unlocked then
 		frame.contents:Hide()
@@ -114,10 +112,10 @@ end
 
 -------------------------------------------------------------------------------
 local function Frame_OnShow(frame)
-	module:UpdateFrame(Kerviel.displayedCharKey)
+	store:UpdateFrame(Kerviel.displayedCharKey)
 end
 
-function module:CreateFrame()
+function store:CreateFrame()
 
 	-- Crée la frame
 	frame = CreateFrame('Frame', nil, nil, 'KervielReagentBankFrameTemplate')
@@ -149,7 +147,7 @@ end
 -------------------------------------------------------------------------------
 -- Gestion de la banque de composants
 -------------------------------------------------------------------------------
-function module:BANKFRAME_OPENED(evt)
+function store:BANKFRAME_OPENED(evt)
 
 	-- Sauve le contenu de la banque de composants
 	self.db.char.unlocked = IsReagentBankUnlocked()
@@ -164,11 +162,11 @@ function module:BANKFRAME_OPENED(evt)
 	self:UpdateFrame()
 
 	-- Prévient la fenêtre principale de rafraîchir son menu
-	Kerviel.callbacks:Fire('StorageChanged', self:GetName())
+	self:NotifyChange()
 end
 
 -------------------------------------------------------------------------------
-function module:PLAYERREAGENTBANKSLOTS_CHANGED(evt, arg1)
+function store:PLAYERREAGENTBANKSLOTS_CHANGED(evt, arg1)
 	arg1 = tonumber(arg1)
 
 	-- Sauve le nouveau contenu
@@ -176,21 +174,21 @@ function module:PLAYERREAGENTBANKSLOTS_CHANGED(evt, arg1)
 
 	-- Et redessine le slot si la banque du personnage courant est affichée
 	if changed and frame and frame:IsVisible() and Kerviel.displayedCharKey == Kerviel.playerCharKey then
-		Kerviel:UpdateItemButton(buttons[arg1], self:GetItem(self.db.char.slots, arg1))
+		self:UpdateItemButton(buttons[arg1], self:GetItem(self.db.char.slots, arg1))
 	end
 end
 
 -------------------------------------------------------------------------------
 -- Initialisation
 -------------------------------------------------------------------------------
-function module:OnInitialize()
+function store:OnInitialize()
 
 	-- Initialise les données sauvegardées
 	self.db = Kerviel.db:RegisterNamespace(self:GetName(), ns_defaults)
 end
 
 -------------------------------------------------------------------------------
-function module:OnEnable()
+function store:OnEnable()
 
 	-- Ecoute les événements
 	self:RegisterEvent('BANKFRAME_OPENED')

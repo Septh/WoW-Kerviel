@@ -1,18 +1,16 @@
 
--- Environnement
-local Kerviel = LibStub('AceAddon-3.0'):GetAddon('Kerviel')
-local module  = Kerviel:NewModule('Bank')
-local L       = LibStub('AceLocale-3.0'):GetLocale('Kerviel')
-
 -- Données pour le module
-module.storeInfo = {
-	-- Module
-	order  = 10,
+local storeInfo = {
+	order  = 30,
 	framed = true,
-	-- Bouton
 	text   = _G.BANK,
 	icon   = 'Interface\\AddOns\\Kerviel\\img\\Bank',
 }
+
+-- Environnement
+local Kerviel = LibStub('AceAddon-3.0'):GetAddon('Kerviel')
+local store   = Kerviel:NewStore('Bank', storeInfo)
+local L       = LibStub('AceLocale-3.0'):GetLocale('Kerviel')
 
 -- Données
 local BANK_CONTAINER    = _G.BANK_CONTAINER
@@ -32,8 +30,8 @@ local delayedBagUpdates = {}
 -- Donnés sauvegardées
 local ns_defaults = {
 	char = {
-		-- slots = {},
-		-- bags  = {},
+		slots = {},
+		bags  = {},
 		maxBags = NUM_BANK_BAGS,
 	}
 }
@@ -41,21 +39,21 @@ local ns_defaults = {
 -------------------------------------------------------------------------------
 -- Gestion du module
 -------------------------------------------------------------------------------
-function module:IsStorageAvailable(charKey)
+function store:IsStorageAvailableFor(charKey)
 	local sv = rawget(self.db, 'sv')
 	return sv.char and sv.char[charKey] and sv.char[charKey].slots
 end
 
-function module:ChangeDisplayedCharacter(charKey)
+function store:ChangeDisplayedCharacter(charKey)
 	self:UpdateFrame(charKey)
 end
 
-function module:GetData(charKey)
+function store:GetDataFor(charKey)
 	local sv = rawget(self.db, 'sv')
 	return sv.char and sv.char[charKey]
 end
 
-function module:GetFrame()
+function store:GetFrame()
 	if not frame then self:CreateFrame() end
 	return frame
 end
@@ -63,10 +61,10 @@ end
 -------------------------------------------------------------------------------
 -- Recherche d'objet
 -------------------------------------------------------------------------------
-function module:SearchInChar(charKey, itemID)
+function store:SearchInChar(charKey, itemID)
 	local results, found = nil, 0
 
-	local charData = self:GetData(charKey)
+	local charData = self:GetDataFor(charKey)
 	if charData then
 		if charData.slots then
 			local count = 0
@@ -109,7 +107,7 @@ end
 -------------------------------------------------------------------------------
 -- Gestion de la fenêtre
 -------------------------------------------------------------------------------
-function module:UpdateFrame(charKey)
+function store:UpdateFrame(charKey)
 
 	-- Rien à faire si la frame n'est pas affichée
 	if not frame or not frame:IsVisible() then return end
@@ -122,14 +120,14 @@ function module:UpdateFrame(charKey)
 	end
 
 	-- Trouve la DB pour le personnage demandé
-	local charData = self:GetData(charKey)
+	local charData = self:GetDataFor(charKey)
 	if charData and charData.slots then
 		frame.error:Hide()
 		frame.contents:Show()
 
 		-- Slots
 		for i = 1, NUM_BANK_SLOTS do
-			Kerviel:UpdateItemButton(buttons[i], self:GetItem(charData.slots, i))
+			self:UpdateItemButton(buttons[i], self:GetItem(charData.slots, i))
 		end
 
 		-- Sacs
@@ -149,7 +147,7 @@ function module:UpdateFrame(charKey)
 
 				-- Affiche l'icône du sac
 				-- Le compteur affiche le nombre d'empacements disponbiles
-				Kerviel:UpdateItemButton(button, charData.bags[i].id, free)
+				self:UpdateItemButton(button, charData.bags[i].id, free)
 				button.icon:SetVertexColor(1, 1, 1)
 
 				-- La couleur du bord rappelle s'il est plein ou vide
@@ -157,7 +155,7 @@ function module:UpdateFrame(charKey)
 				button.IconBorder:Show()
 			else
 				-- Pas de sac dans cet emplacement
-				Kerviel:UpdateItemButton(button, nil, nil)
+				self:UpdateItemButton(button, nil, nil)
 				button.icon:SetTexture('Interface\\PaperDoll\\UI-PaperDoll-Slot-Bag')
 
 				-- Rougit l'icône si l'emplacement de sac n'est pas disponible
@@ -179,10 +177,10 @@ end
 
 -------------------------------------------------------------------------------
 local function Frame_OnShow(frame)
-	module:UpdateFrame(Kerviel.displayedCharKey)
+	store:UpdateFrame(Kerviel.displayedCharKey)
 end
 
-function module:CreateFrame()
+function store:CreateFrame()
 
 	-- Crée la frame
 	frame = CreateFrame('Frame', nil, nil, 'KervielBankFrameTemplate')
@@ -250,7 +248,7 @@ end
 -------------------------------------------------------------------------------
 -- Gestion du contenu de la banque
 -------------------------------------------------------------------------------
-function module:SaveBag(bagNum)
+function store:SaveBag(bagNum)
 	local containerID = FIRST_BANK_BAG + bagNum	-- bagNum = 1 ... NUM_BANK_BAGS
 	local bagItemID   = select(10, GetContainerItemInfo(BANKBAG_CONTAINER, bagNum))
 	local bagSize     = GetContainerNumSlots(containerID)
@@ -284,7 +282,7 @@ function module:SaveBag(bagNum)
 end
 
 -------------------------------------------------------------------------------
-function module:BANKFRAME_OPENED(evt)
+function store:BANKFRAME_OPENED(evt)
 
 	-- Sauve le contenu de la banque
 	self.db.char.slots = Kerviel:AssertTable(self.db.char.slots)
@@ -303,11 +301,11 @@ function module:BANKFRAME_OPENED(evt)
 	self:UpdateFrame()
 
 	-- Prévient la fenêtre principale de rafraîchir son menu
-	Kerviel.callbacks:Fire('StorageChanged', self:GetName())
+	self:NotifyChange()
 end
 
 -------------------------------------------------------------------------------
-function module:BAG_UPDATE_DELAYED(evt)
+function store:BAG_UPDATE_DELAYED(evt)
 
 	if #delayedBagUpdates > 0 then
 		-- First In, First Out
@@ -322,7 +320,7 @@ function module:BAG_UPDATE_DELAYED(evt)
 end
 
 -------------------------------------------------------------------------------
-function module:BAG_UPDATE(evt, arg1)
+function store:BAG_UPDATE(evt, arg1)
 
 	-- Vérifie si c'est un sac de banque et si la banque est ouverte
 	-- (il y a parfois des BAG_UPDATE de banque au login)
@@ -337,15 +335,12 @@ function module:BAG_UPDATE(evt, arg1)
 end
 
 -------------------------------------------------------------------------------
-function module:PLAYERBANKSLOTS_CHANGED(evt, arg1)
+function store:PLAYERBANKSLOTS_CHANGED(evt, arg1)
 	arg1 = tonumber(arg1)
 	if arg1 <= NUM_BANK_SLOTS then
-		-- Un slot générique, on peut le mettre à jour immédiatement
 		local changed = self:PutContainerItem(BANK_CONTAINER, arg1, self.db.char.slots)
-
-		-- Redessine le slot si la banque du personnage courant est affichée
 		if changed and frame and frame:IsVisible() and Kerviel.displayedCharKey == Kerviel.playerCharKey then
-			Kerviel:UpdateItemButton(buttons[arg1], self:GetItem(self.db.char.slots, arg1))
+			self:UpdateItemButton(buttons[arg1], self:GetItem(self.db.char.slots, arg1))
 		end
 	else
 		-- Un sac de banque, on attend BAG_UPDATE_DELAYED pour mettre ce sac à jour
@@ -356,18 +351,18 @@ end
 -------------------------------------------------------------------------------
 -- Initialisation
 -------------------------------------------------------------------------------
-function module:OnInitialize()
-
-	-- Initialise les données sauvegardées
-	self.db = Kerviel.db:RegisterNamespace(self:GetName(), ns_defaults)
-end
-
--------------------------------------------------------------------------------
-function module:OnEnable()
+function store:OnEnable()
 
 	-- Ecoute les événements
 	self:RegisterEvent('BANKFRAME_OPENED')
 	self:RegisterEvent('PLAYERBANKSLOTS_CHANGED')
 	self:RegisterEvent('BAG_UPDATE')
 	self:RegisterEvent('BAG_UPDATE_DELAYED')
+end
+
+-------------------------------------------------------------------------------
+function store:OnInitialize()
+
+	-- Initialise les données sauvegardées
+	self.db = Kerviel.db:RegisterNamespace(self:GetName(), ns_defaults)
 end

@@ -1,20 +1,18 @@
 
 -- TODO: Prendre en compte les envois de mails aux alts
 
+-- Donnés pour le module
+local storeInfo = {
+	order  = 50,
+	framed = true,
+	text   = _G.MAIL_LABEL,
+	icon   = 'Interface\\AddOns\\Kerviel\\img\\Mail',
+}
+
 -- Environnement
 local Kerviel = LibStub('AceAddon-3.0'):GetAddon('Kerviel')
-local module  = Kerviel:NewModule('Mail')
+local store   = Kerviel:NewStore('Mail', storeInfo)
 local L       = LibStub('AceLocale-3.0'):GetLocale('Kerviel')
-
--- Donnés pour le module
-module.storeInfo = {
-	-- Module
-	order = 50,
-	framed = true,
-	-- Bouton
-	text  = _G.MAIL_LABEL,
-	icon  = 'Interface\\AddOns\\Kerviel\\img\\Mail',
-}
 
 -- Données
 local MAX_MAILS_DISPLAYED = 5
@@ -36,23 +34,23 @@ local ns_defaults = {
 }
 
 -------------------------------------------------------------------------------
--- Gestion du module
+-- Gestion du store
 -------------------------------------------------------------------------------
-function module:IsStorageAvailable(charKey)
+function store:IsStorageAvailableFor(charKey)
 	local sv = rawget(self.db, 'sv')
 	return sv.char and sv.char[charKey] and sv.char[charKey].mails
 end
 
-function module:ChangeDisplayedCharacter(charKey)
+function store:ChangeDisplayedCharacter(charKey)
 	self:UpdateFrame(charKey)
 end
 
-function module:GetData(charKey)
+function store:GetDataFor(charKey)
 	local sv = rawget(self.db, 'sv')
 	return sv.char and sv.char[charKey]
 end
 
-function module:GetFrame()
+function store:GetFrame()
 	if not frame then self:CreateFrame() end
 	return frame
 end
@@ -60,10 +58,10 @@ end
 -------------------------------------------------------------------------------
 -- Recherche d'objet
 -------------------------------------------------------------------------------
-function module:SearchInChar(charKey, itemID)
+function store:SearchInChar(charKey, itemID)
 	local results, found = nil, 0
 
-	local charData = self:GetData(charKey)
+	local charData = self:GetDataFor(charKey)
 	if charData and charData.mails then
 		local now = time()
 		for mail = 1, #charData.mails do
@@ -92,7 +90,7 @@ end
 -------------------------------------------------------------------------------
 -- Gestion de la frame
 -------------------------------------------------------------------------------
-function module:UpdateFrame(charKey)
+function store:UpdateFrame(charKey)
 
 	-- Rien à faire si la frame n'est pas affichée
 	if not frame or not frame:IsVisible() then return end
@@ -104,7 +102,7 @@ function module:UpdateFrame(charKey)
 		if charKey ~= Kerviel.displayedCharKey then return end
 	end
 
-	local charData = self:GetData(charKey)
+	local charData = self:GetDataFor(charKey)
 	if charData and charData.mails then
 		frame.error:Hide()
 		frame.contents:Show()
@@ -115,7 +113,7 @@ function module:UpdateFrame(charKey)
 			local expiry = floor(now - charData.lastRead + (charData.mails[i].daysLeft * ONE_DAY))
 			if expiry > 0 then
 				-- Expéditeur
-				mails[mailIndex].sender:SetFormattedText('De : %s', charData.mails[i].sender)
+				mails[mailIndex].sender:SetFormattedText('De : %s', charData.mails[i].sender or '???')
 
 				-- Expiration
 				if expiry < EXPIRY_ALERT then
@@ -129,10 +127,10 @@ function module:UpdateFrame(charKey)
 				-- Pièces jointes
 				local numAttachments = min(#(charData.mails[i].attachments or self.EmptyTable), MAX_ATTACHMENTS_PER_MAIL)
 				for j = 1, numAttachments do
-					Kerviel:UpdateItemButton(buttons[mailIndex][j], self:GetItem(charData.mails[i].attachments, j))
+					self:UpdateItemButton(buttons[mailIndex][j], self:GetItem(charData.mails[i].attachments, j))
 				end
 				for j = numAttachments + 1, MAX_ATTACHMENTS_PER_MAIL do
-					Kerviel:UpdateItemButton(buttons[mailIndex][j], nil, nil)
+					self:UpdateItemButton(buttons[mailIndex][j], nil, nil)
 				end
 
 				mails[mailIndex]:Show()
@@ -157,11 +155,11 @@ end
 
 -------------------------------------------------------------------------------
 local function Frame_OnShow()
-	module:UpdateFrame(Kerviel.displayedCharKey)
+	store:UpdateFrame(Kerviel.displayedCharKey)
 end
 
 -------------------------------------------------------------------------------
-function module:CreateFrame()
+function store:CreateFrame()
 
 	-- Crée la frame
 	frame = CreateFrame('Frame', nil, nil, 'KervielMailFrameTemplate')
@@ -200,7 +198,7 @@ end
 -------------------------------------------------------------------------------
 -- Gestion du courrier
 -------------------------------------------------------------------------------
-function module:MAIL_INBOX_UPDATE(evt)
+function store:MAIL_INBOX_UPDATE(evt)
 	if _G.MailFrame:IsShown() then
 
 		-- Le plus simple pour l'instant est de tout supprimer puis de tout relire...
@@ -242,22 +240,22 @@ function module:MAIL_INBOX_UPDATE(evt)
 
 		-- Redessine la fenêtre et met à jour le menu principal
 		self:UpdateFrame()
-		Kerviel.callbacks:Fire('StorageChanged', self:GetName())
+		self:NotifyChange()
 	end
 end
 
 -------------------------------------------------------------------------------
 -- Initialisation
 -------------------------------------------------------------------------------
-function module:OnInitialize()
-
-	-- Initialise les données sauvegardées
-	self.db = Kerviel.db:RegisterNamespace(self:GetName(), ns_defaults)
-end
-
--------------------------------------------------------------------------------
-function module:OnEnable()
+function store:OnEnable()
 
 	-- Ecoute les événements
 	self:RegisterEvent('MAIL_INBOX_UPDATE')
+end
+
+-------------------------------------------------------------------------------
+function store:OnInitialize()
+
+	-- Initialise les données sauvegardées
+	self.db = Kerviel.db:RegisterNamespace(self:GetName(), ns_defaults)
 end

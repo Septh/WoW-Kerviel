@@ -218,8 +218,7 @@
 			<OnEnter>
 				if self.itemID then
 					GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-					--GameTooltip:SetItemByID(self.itemID)
-					GameTooltip:SetHyperlink('Hitem:'..self.itemID..'|h')	-- LibExtraTip ne gère pas SetItemByID()
+					GameTooltip:SetHyperlink('Hitem:' .. self.itemID .. '|h')	-- LibExtraTip ne gère pas SetItemByID()
 					GameTooltip:Show()
 				end
 			</OnEnter>
@@ -228,6 +227,23 @@
 					GameTooltip:Hide()
 				end
 			</OnLeave>
+			<OnEvent>
+					if event == 'GET_ITEM_INFO_RECEIVED' and select(1, ...) == self.itemID then
+
+						-- Affiche la texture
+						local _, _, itemQuality, _, _, _, _, _, _, itemTexture, _ = GetItemInfo(self.itemID)
+						if itemTexture then
+							if self:IsVisible() then
+								self.icon:SetTexture(itemTexture)
+								self.icon:Show()
+								SetItemButtonQuality(self, itemQuality, self.itemID)
+							end
+
+							-- Plus besoin de ça
+							self:UnregisterEvent(event)
+						end
+					end
+			</OnEvent>
 		</Scripts>
 	</Button>
 
