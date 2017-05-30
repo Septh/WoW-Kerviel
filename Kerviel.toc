@@ -1,6 +1,6 @@
 ## Interface: 70200
 ## Title: Kerviel
-## Notes: Your Bank Warrior
+## Notes: Your All-In-One Bank Specialist
 ## Version: 1.0.0
 ## Author: Septh
 ## OptionalDeps: !Swatter
@@ -19,6 +19,9 @@ Libs\AceLocale-3.0\AceLocale-3.0.xml
 # Utilise une version modifiée de AceDB-3.0
 AceDB-3.0-GuildMod.lua
 
+# NoTaint UIDropDownMenu.xml
+Libs\!NoTaint_UIDropDownMenu\UIDropDownMenu.xml
+
 # LibExtraTip
 Libs\LibExtraTip\Load.xml
 
@@ -34,6 +37,7 @@ Tooltip.lua
 
 # Stores
 #StoreAPI.lua
+stores.lua
 stores\Equipment.lua
 stores\Bags.lua
 stores\Bank.lua

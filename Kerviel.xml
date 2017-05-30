@@ -233,11 +233,8 @@
 						-- Affiche la texture
 						local _, _, itemQuality, _, _, _, _, _, _, itemTexture, _ = GetItemInfo(self.itemID)
 						if itemTexture then
-							if self:IsVisible() then
-								self.icon:SetTexture(itemTexture)
-								self.icon:Show()
-								SetItemButtonQuality(self, itemQuality, self.itemID)
-							end
+							self.icon:SetTexture(itemTexture)
+							SetItemButtonQuality(self, itemQuality, self.itemID)
 
 							-- Plus besoin de ça
 							self:UnregisterEvent(event)
@@ -506,7 +503,7 @@
 					</Layer>
 				</Layers>
 				<Frames>
-					<Frame name="KervielGuildBankFrameDropDownMenu" parentKey="dropdown" inherits="UIDropDownMenuTemplate">
+					<Frame name="KervielGuildBankFrameDropDownMenu" parentKey="dropdown" inherits="Lib_UIDropDownMenuTemplate">
 						<Anchors>
 							<Anchor point="LEFT" relativeKey="$parent.tabsText" relativePoint="RIGHT" x="-10" y="-4"/>
 						</Anchors>
@@ -817,7 +814,7 @@
 					<Anchor point="BOTTOMRIGHT" relativeKey="$parent.info" relativePoint="TOPLEFT" x="200" y="6" />
 				</Anchors>
 				<Frames>
-					<Frame name="KervielMainFrameDropDownMenu" parentKey="dropdown" inherits="UIDropDownMenuTemplate">
+					<Frame name="KervielMainFrameDropDownMenu" parentKey="dropdown" inherits="Lib_UIDropDownMenuTemplate">
 						<Anchors>
 							<Anchor point="TOP" x="0" y="-10"/>
 						</Anchors>

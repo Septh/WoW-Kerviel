@@ -37,6 +37,27 @@ local ns_defaults = {
 }
 
 -------------------------------------------------------------------------------
+-- Initialisation
+-------------------------------------------------------------------------------
+function store:OnInitialize()
+
+	-- Initialise les données sauvegardées
+	self.db = Kerviel.db:RegisterNamespace(self:GetName(), ns_defaults)
+end
+
+-------------------------------------------------------------------------------
+function store:OnEnable()
+
+	-- Ecoute les événements
+	self:RegisterEvent('BANKFRAME_OPENED')
+	self:RegisterEvent('PLAYERBANKSLOTS_CHANGED')
+	self:RegisterEvent('BAG_UPDATE')
+	self:RegisterEvent('BAG_UPDATE_DELAYED')
+
+	self:RegisterMessage('SetDisplayedCharacter')
+end
+
+-------------------------------------------------------------------------------
 -- Gestion du module
 -------------------------------------------------------------------------------
 function store:IsStorageAvailableFor(charKey)
@@ -44,18 +65,21 @@ function store:IsStorageAvailableFor(charKey)
 	return sv.char and sv.char[charKey] and sv.char[charKey].slots
 end
 
-function store:ChangeDisplayedCharacter(charKey)
-	self:UpdateFrame(charKey)
-end
-
+-------------------------------------------------------------------------------
 function store:GetDataFor(charKey)
 	local sv = rawget(self.db, 'sv')
 	return sv.char and sv.char[charKey]
 end
 
+-------------------------------------------------------------------------------
 function store:GetFrame()
 	if not frame then self:CreateFrame() end
 	return frame
+end
+
+-------------------------------------------------------------------------------
+function store:SetDisplayedCharacter(msg, charKey)
+	self:UpdateFrame(charKey)
 end
 
 -------------------------------------------------------------------------------
@@ -75,7 +99,7 @@ function store:SearchInChar(charKey, itemID)
 				end
 			end
 			if count > 0 then
-				results = results or Kerviel:NewTable()
+				results = results or self:NewTable()
 				table.insert(results, { ['Banque'] = count } )
 				found = found + count
 			end
@@ -92,7 +116,7 @@ function store:SearchInChar(charKey, itemID)
 						end
 					end
 					if count > 0 then
-						results = results or Kerviel:NewTable()
+						results = results or self:NewTable()
 						table.insert(results, { ['Sac de banque #'..i] = count } )
 						found = found + count
 					end
@@ -134,8 +158,7 @@ function store:UpdateFrame(charKey)
 		for i = 1, NUM_BANK_BAGS do
 			local button = bagButtons[i]
 			if charData.bags and charData.bags[i] then
-
-				-- Calcule le nombre d'emplacements disponibles dans ce sac
+				-- Compte le nombre d'emplacements disponibles dans ce sac
 				local free = charData.bags[i].size
 				if charData.bags[i].slots then
 					for j = 1, charData.bags[i].size do
@@ -246,7 +269,7 @@ function store:CreateFrame()
 end
 
 -------------------------------------------------------------------------------
--- Gestion du contenu de la banque
+-- Gestion du contenu de la banque du personnage courant
 -------------------------------------------------------------------------------
 function store:SaveBag(bagNum)
 	local containerID = FIRST_BANK_BAG + bagNum	-- bagNum = 1 ... NUM_BANK_BAGS
@@ -256,12 +279,12 @@ function store:SaveBag(bagNum)
 
 	-- Sauve le contenu du sac
 	if bagItemID then
-		self.db.char.bags[bagNum] = Kerviel:AssertTable(self.db.char.bags[bagNum])
-		self.db.char.bags[bagNum].slots = Kerviel:AssertTable(self.db.char.bags[bagNum].slots)
+		self.db.char.bags[bagNum] = self:NewTable(self.db.char.bags[bagNum])
+		self.db.char.bags[bagNum].slots = self:NewTable(self.db.char.bags[bagNum].slots)
 
 		-- Met à jour les données sauvegardées pour ce sac
 		for i = 1, math.max(bagSize, self.db.char.bags[bagNum].size or 0) do
-			self:PutContainerItem(containerID, i, self.db.char.bags[bagNum].slots)
+			self:PutContainerItem(self.db.char.bags[bagNum].slots, containerID, i)
 		end
 
 		-- Sauve l'ID et la taille du sac lui-même
@@ -269,13 +292,11 @@ function store:SaveBag(bagNum)
 		self.db.char.bags[bagNum].size = bagSize
 		if bagFree == bagSize then
 			-- Sac vide
-			Kerviel:DelTable(self.db.char.bags[bagNum].slots)
-			self.db.char.bags[bagNum].slots = nil
+			self.db.char.bags[bagNum].slots = self:DelTable(self.db.char.bags[bagNum].slots)
 		end
 	else
 		-- Pas de sac
-		Kerviel:DelTable(self.db.char.bags[bagNum])
-		self.db.char.bags[bagNum] = nil
+		self.db.char.bags[bagNum] = self:DelTable(self.db.char.bags[bagNum])
 	end
 
 	return true
@@ -285,14 +306,14 @@ end
 function store:BANKFRAME_OPENED(evt)
 
 	-- Sauve le contenu de la banque
-	self.db.char.slots = Kerviel:AssertTable(self.db.char.slots)
+	self.db.char.slots = self:NewTable(self.db.char.slots)
 	for i = 1, NUM_BANK_SLOTS do
-		self:PutContainerItem(BANK_CONTAINER, i, self.db.char.slots)
+		self:PutContainerItem(self.db.char.slots, BANK_CONTAINER, i)
 	end
 
 	-- Sauve le contenu des sacs de banque
 	self.db.char.maxBags = GetNumBankSlots()
-	self.db.char.bags = Kerviel:AssertTable(self.db.char.bags)
+	self.db.char.bags = self:NewTable(self.db.char.bags)
 	for i = 1, NUM_BANK_BAGS do
 		self:SaveBag(i)
 	end
@@ -301,7 +322,7 @@ function store:BANKFRAME_OPENED(evt)
 	self:UpdateFrame()
 
 	-- Prévient la fenêtre principale de rafraîchir son menu
-	self:NotifyChange()
+	self:NotifyUpdate()
 end
 
 -------------------------------------------------------------------------------
@@ -337,32 +358,8 @@ end
 -------------------------------------------------------------------------------
 function store:PLAYERBANKSLOTS_CHANGED(evt, arg1)
 	arg1 = tonumber(arg1)
-	if arg1 <= NUM_BANK_SLOTS then
-		local changed = self:PutContainerItem(BANK_CONTAINER, arg1, self.db.char.slots)
-		if changed and frame and frame:IsVisible() and Kerviel.displayedCharKey == Kerviel.playerCharKey then
-			self:UpdateItemButton(buttons[arg1], self:GetItem(self.db.char.slots, arg1))
-		end
-	else
-		-- Un sac de banque, on attend BAG_UPDATE_DELAYED pour mettre ce sac à jour
-		table.insert(delayedBagUpdates, arg1 - NUM_BANK_SLOTS)
+	local changed = self:PutContainerItem(self.db.char.slots, BANK_CONTAINER, arg1)
+	if changed and frame and frame:IsVisible() and Kerviel.displayedCharKey == Kerviel.playerCharKey then
+		self:UpdateItemButton(buttons[arg1], self:GetItem(self.db.char.slots, arg1))
 	end
-end
-
--------------------------------------------------------------------------------
--- Initialisation
--------------------------------------------------------------------------------
-function store:OnEnable()
-
-	-- Ecoute les événements
-	self:RegisterEvent('BANKFRAME_OPENED')
-	self:RegisterEvent('PLAYERBANKSLOTS_CHANGED')
-	self:RegisterEvent('BAG_UPDATE')
-	self:RegisterEvent('BAG_UPDATE_DELAYED')
-end
-
--------------------------------------------------------------------------------
-function store:OnInitialize()
-
-	-- Initialise les données sauvegardées
-	self.db = Kerviel.db:RegisterNamespace(self:GetName(), ns_defaults)
 end

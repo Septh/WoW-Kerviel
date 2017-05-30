@@ -41,7 +41,7 @@ function store:IsStorageAvailableFor(charKey)
 	return sv.char and sv.char[charKey] and sv.char[charKey].mails
 end
 
-function store:ChangeDisplayedCharacter(charKey)
+function store:SetDisplayedCharacter(msg, charKey)
 	self:UpdateFrame(charKey)
 end
 
@@ -64,16 +64,16 @@ function store:SearchInChar(charKey, itemID)
 	local charData = self:GetDataFor(charKey)
 	if charData and charData.mails then
 		local now = time()
-		for mail = 1, #charData.mails do
-			local mailData = charData.mails[mail]
-
-			-- Ignore les mails renvoyés ou perdus
-			local expiry = floor(now - charData.lastRead + (mailData.daysLeft * ONE_DAY))
-			if expiry > 0 and mailData.attachments then
-				for j = 1, #mailData.attachments do
-					local id, num = self:GetItem(mailData.attachments, j)
-					if id == itemID then
-						found = found + num
+		for mail, mailData in ipairs(charData.mails) do
+			if mailData then
+				-- Ignore les mails renvoyés ou perdus
+				local expiry = floor(now - charData.lastRead + (mailData.daysLeft * ONE_DAY))
+				if expiry > 0 and mailData.attachments then
+					for j = 1, #mailData.attachments do
+						local id, num = self:GetItem(mailData.attachments, j)
+						if id == itemID then
+							found = found + num
+						end
 					end
 				end
 			end
@@ -223,13 +223,13 @@ function store:MAIL_INBOX_UPDATE(evt)
 				local _, _, sender, _, money, _, daysLeft, numAttachments = GetInboxHeaderInfo(i)
 
 				if numAttachments then
-					self.db.char.mails = Kerviel:AssertTable(self.db.char.mails)
-					self.db.char.mails[i] = Kerviel:AssertTable(self.db.char.mails[i])
+					self.db.char.mails = Kerviel:NewTable(self.db.char.mails)
+					self.db.char.mails[i] = Kerviel:NewTable(self.db.char.mails[i])
 					self.db.char.mails[i].sender = sender
 					self.db.char.mails[i].money = money
 					self.db.char.mails[i].daysLeft = daysLeft
 
-					self.db.char.mails[i].attachments = Kerviel:AssertTable(self.db.char.mails[i].attachments)
+					self.db.char.mails[i].attachments = Kerviel:NewTable(self.db.char.mails[i].attachments)
 					for j = 1, numAttachments do
 						local _, itemID, _, itemCount = GetInboxItem(i, j)
 						self:PutItem(self.db.char.mails[i].attachments, j, itemID, itemCount)
@@ -240,7 +240,7 @@ function store:MAIL_INBOX_UPDATE(evt)
 
 		-- Redessine la fenêtre et met à jour le menu principal
 		self:UpdateFrame()
-		self:NotifyChange()
+		self:NotifyUpdate()
 	end
 end
 
@@ -251,6 +251,8 @@ function store:OnEnable()
 
 	-- Ecoute les événements
 	self:RegisterEvent('MAIL_INBOX_UPDATE')
+
+	self:RegisterMessage('SetDisplayedCharacter')
 end
 
 -------------------------------------------------------------------------------

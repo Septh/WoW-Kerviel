@@ -21,6 +21,27 @@ local ns_defaults = {
 }
 
 -------------------------------------------------------------------------------
+-- Initialisation
+-------------------------------------------------------------------------------
+function store:OnEnable()
+
+	-- Ecoute les événements
+	self:RegisterEvent('PLAYER_EQUIPMENT_CHANGED')
+
+	-- Sauvegarde l'équipement actuel
+	for i = FIRST_EQUIPMENT_SLOT, LAST_EQUIPMENT_SLOT do
+		self:PLAYER_EQUIPMENT_CHANGED(nil, i)
+	end
+end
+
+-------------------------------------------------------------------------------
+function store:OnInitialize()
+
+	-- Initialise les données sauvegardées de ce module
+	self.db = Kerviel.db:RegisterNamespace(self:GetName(), ns_defaults)
+end
+
+-------------------------------------------------------------------------------
 -- Gestion du module
 -------------------------------------------------------------------------------
 function store:IsStorageAvailableFor(charKey)
@@ -28,6 +49,7 @@ function store:IsStorageAvailableFor(charKey)
 	return sv.char and sv.char[charKey] and sv.char[charKey].slots
 end
 
+-------------------------------------------------------------------------------
 function store:GetDataFor(charKey)
 	local sv = rawget(self.db, 'sv')
 	return sv.char and sv.char[charKey]
@@ -57,31 +79,10 @@ function store:SearchInChar(charKey, itemID)
 end
 
 -------------------------------------------------------------------------------
--- Gestion de l'équipement
+-- Gestion de l'équipement du personnage courant
 -------------------------------------------------------------------------------
 function store:PLAYER_EQUIPMENT_CHANGED(evt, arg1)
 	arg1 = tonumber(arg1)
 	local itemID = GetInventoryItemID('player', arg1)
 	self:PutItem(self.db.char.slots, arg1, itemID, 1)
-end
-
--------------------------------------------------------------------------------
--- Initialisation
--------------------------------------------------------------------------------
-function store:OnEnable()
-
-	-- Ecoute les événements
-	self:RegisterEvent('PLAYER_EQUIPMENT_CHANGED')
-
-	-- Sauvegarde l'équipement actuel
-	for i = FIRST_EQUIPMENT_SLOT, LAST_EQUIPMENT_SLOT do
-		self:PLAYER_EQUIPMENT_CHANGED(nil, i)
-	end
-end
-
--------------------------------------------------------------------------------
-function store:OnInitialize()
-
-	-- Initialise les données sauvegardées de ce module
-	self.db = Kerviel.db:RegisterNamespace(self:GetName(), ns_defaults)
 end

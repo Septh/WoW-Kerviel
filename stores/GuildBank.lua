@@ -40,7 +40,7 @@ function store:IsStorageAvailableFor(charKey)
 	return guildData and guildData.tabs
 end
 
-function store:ChangeDisplayedCharacter(charKey)
+function store:SetDisplayedCharacter(msg, charKey)
 	self:UpdateFrame(charKey)
 end
 
@@ -110,10 +110,10 @@ function store:UpdateFrame(charKey)
 			frame.above:Show()
 
 			-- Onglet
-			local tab = guildKey == displayedGuildKey and UIDropDownMenu_GetSelectedValue(tabsDropDown) or 1
-			UIDropDownMenu_EnableDropDown(tabsDropDown)
-			UIDropDownMenu_Initialize(tabsDropDown, tabsDropDown.initialize)
-			UIDropDownMenu_SetSelectedValue(tabsDropDown, tab)
+			local tab = guildKey == displayedGuildKey and Lib_UIDropDownMenu_GetSelectedValue(tabsDropDown) or 1
+			Lib_UIDropDownMenu_EnableDropDown(tabsDropDown)
+			Lib_UIDropDownMenu_Initialize(tabsDropDown, tabsDropDown.initialize)
+			Lib_UIDropDownMenu_SetSelectedValue(tabsDropDown, tab)
 			displayedGuildKey = guildKey
 
 			-- Le contenu
@@ -134,8 +134,8 @@ function store:UpdateFrame(charKey)
 			frame.error:Show()
 			frame.error.text:SetFormattedText('Pas de données pour la guilde "%s"', guildKey)
 
-			UIDropDownMenu_SetText(tabsDropDown, 'Aucun onglet')
-			UIDropDownMenu_DisableDropDown(tabsDropDown)
+			Lib_UIDropDownMenu_SetText(tabsDropDown, 'Aucun onglet')
+			Lib_UIDropDownMenu_DisableDropDown(tabsDropDown)
 		end
 	else
 		frame.above:Hide()
@@ -143,8 +143,8 @@ function store:UpdateFrame(charKey)
 		frame.error:Show()
 		frame.error.text:SetFormattedText('"%s" n\'est pas dans une guilde', charKey)
 
-		UIDropDownMenu_SetText(tabsDropDown, 'Aucun onglet')
-		UIDropDownMenu_DisableDropDown(tabsDropDown)
+		Lib_UIDropDownMenu_SetText(tabsDropDown, 'Aucun onglet')
+		Lib_UIDropDownMenu_DisableDropDown(tabsDropDown)
 	end
 end
 
@@ -155,12 +155,12 @@ end
 
 -------------------------------------------------------------------------------
 local function TabsDropDown_OnClick(entry, arg1, arg2, checked)
-	UIDropDownMenu_SetSelectedValue(tabsDropDown, entry.value)
+	Lib_UIDropDownMenu_SetSelectedValue(tabsDropDown, entry.value)
 	store:UpdateFrame(Kerviel.displayedCharKey)
 end
 
 local function TabsDropDown_Checked(entry)
-	return UIDropDownMenu_GetSelectedValue(tabsDropDown) == entry.value
+	return Lib_UIDropDownMenu_GetSelectedValue(tabsDropDown) == entry.value
 end
 
 local function TabsDropDown_Initialize()
@@ -171,7 +171,7 @@ local function TabsDropDown_Initialize()
 	if not guildData or not guildData.tabs then return end
 
 	-- Remplit le menu avec la liste des onglets
-	local info = UIDropDownMenu_CreateInfo()
+	local info = Lib_UIDropDownMenu_CreateInfo()
 	for i = 1, #guildData.tabs do
 		wipe(info)
 		info.text       = guildData.tabs[i].name
@@ -181,12 +181,12 @@ local function TabsDropDown_Initialize()
 		info.checked    = TabsDropDown_Checked
 		info.func       = TabsDropDown_OnClick
 		info.minWidth   = _G.KervielGuildBankFrameDropDownMenuMiddle:GetWidth()
-		UIDropDownMenu_AddButton(info)
+		Lib_UIDropDownMenu_AddButton(info)
 	end
 end
 
 -------------------------------------------------------------------------------
-function store:UIDropDownMenu_RefreshDropDownSize(dropDownListFrame)
+function store:Lib_UIDropDownMenu_RefreshDropDownSize(dropDownListFrame)
 
 	-- HACK --
 	-- Redessine le menu avec des entrées et des icônes plus grandes
@@ -195,20 +195,20 @@ function store:UIDropDownMenu_RefreshDropDownSize(dropDownListFrame)
 		local BUTTON_HEIGHT = ICON_SIZE + 8
 
 		for i = 1, dropDownListFrame.numButtons do
-			local button = _G['DropDownList1Button'.. i]
+			local button = _G['Lib_DropDownList1Button'.. i]
 			button:SetHeight(BUTTON_HEIGHT)
 			if i > 1 then
 				button:ClearAllPoints()
-				button:SetPoint('TOPLEFT', _G['DropDownList1Button'.. (i - 1)], 'BOTTOMLEFT', 0, 0)
+				button:SetPoint('TOPLEFT', _G['Lib_DropDownList1Button'.. (i - 1)], 'BOTTOMLEFT', 0, 0)
 			end
-			_G['DropDownList1Button' .. i .. 'Icon']:SetSize(ICON_SIZE, ICON_SIZE)
+			_G['Lib_DropDownList1Button' .. i .. 'Icon']:SetSize(ICON_SIZE, ICON_SIZE)
 		end
 		dropDownListFrame:SetWidth(_G.KervielGuildBankFrameDropDownMenuMiddle:GetWidth() + 2 * UIDROPDOWNMENU_BORDER_HEIGHT)
 		dropDownListFrame:SetHeight(dropDownListFrame.numButtons * BUTTON_HEIGHT + 2 * UIDROPDOWNMENU_BORDER_HEIGHT)
 	else
 		-- Si ce n'est pas notre menu, il faut rétablir la hauteur par défaut
 		for i = 1, dropDownListFrame.numButtons do
-			_G['DropDownList1Button'.. i]:SetHeight(UIDROPDOWNMENU_BUTTON_HEIGHT)
+			_G['Lib_DropDownList1Button'.. i]:SetHeight(UIDROPDOWNMENU_BUTTON_HEIGHT)
 		end
 	end
 	-- /HACK --
@@ -222,14 +222,14 @@ function store:CreateFrame()
 	frame:SetScript('OnShow', Frame_OnShow)
 
 	-- Crée le menu déroulant des onglets
-	self:SecureHook('UIDropDownMenu_RefreshDropDownSize')	-- HACK: embellit le menu
+	self:SecureHook('Lib_UIDropDownMenu_RefreshDropDownSize')	-- HACK: embellit le menu
 
 	tabsDropDown = frame.above.dropdown
-	UIDropDownMenu_SetWidth(tabsDropDown, 200)
-	UIDropDownMenu_JustifyText(tabsDropDown, 'LEFT')
-	UIDropDownMenu_Initialize(tabsDropDown, TabsDropDown_Initialize)
-	UIDropDownMenu_SetSelectedValue(tabsDropDown, 1)
-	UIDropDownMenu_SetText(tabsDropDown, 'Aucun onglet')
+	Lib_UIDropDownMenu_SetWidth(tabsDropDown, 200)
+	Lib_UIDropDownMenu_JustifyText(tabsDropDown, 'LEFT')
+	Lib_UIDropDownMenu_Initialize(tabsDropDown, TabsDropDown_Initialize)
+	Lib_UIDropDownMenu_SetSelectedValue(tabsDropDown, 1)
+	Lib_UIDropDownMenu_SetText(tabsDropDown, 'Aucun onglet')
 
 	-- Expérimental : autorise le clic sur l'ensemble du menu, pas seulement le bouton
 	tabsDropDown:SetScript('OnMouseDown', function(dropdown, arg)
@@ -315,7 +315,7 @@ function store:GUILDBANKBAGSLOTS_CHANGED(evt)
 
 	-- Sauve le contenu de l'onglet affiché
 	local tab = GetCurrentGuildBankTab()
-	self.db.guild.tabs[tab].slots = Kerviel:AssertTable(self.db.guild.tabs[tab].slots)
+	self.db.guild.tabs[tab].slots = Kerviel:NewTable(self.db.guild.tabs[tab].slots)
 
 	for i = 1, NUM_GUILDBANK_SLOTS do
 		local _, count = GetGuildBankItemInfo(tab, i)
@@ -328,7 +328,7 @@ function store:GUILDBANKBAGSLOTS_CHANGED(evt)
 
 	-- Redessine la fenêtre et met à jour le menu principal
 	self:UpdateFrame()
-	self:NotifyChange()
+	self:NotifyUpdate()
 end
 
 -------------------------------------------------------------------------------
@@ -343,11 +343,11 @@ function store:GUILDBANK_UPDATE_TABS(evt)
 	self.db.char.tabsview = 0
 
 	-- Sauve le nom et l'icône des onglets dans la DB de guilde
-	self.db.guild.tabs = Kerviel:AssertTable(self.db.guild.tabs)
+	self.db.guild.tabs = Kerviel:NewTable(self.db.guild.tabs)
 	for i = 1, GetNumGuildBankTabs() do
 		local name, icon, isViewable = GetGuildBankTabInfo(i)
 
-		self.db.guild.tabs[i] = Kerviel:AssertTable(self.db.guild.tabs[i])
+		self.db.guild.tabs[i] = Kerviel:NewTable(self.db.guild.tabs[i])
 		self.db.guild.tabs[i].name = (not name or name == '') and _G.GUILDBANK_TAB_NUMBER:format(i) or name
 		self.db.guild.tabs[i].icon = icon
 
@@ -363,13 +363,6 @@ end
 -------------------------------------------------------------------------------
 -- Initialisation
 -------------------------------------------------------------------------------
-function store:OnInitialize()
-
-	-- Initialise les données sauvegardées
-	self.db = Kerviel.db:RegisterNamespace(self:GetName(), ns_defaults)
-end
-
--------------------------------------------------------------------------------
 function store:OnEnable()
 
 	-- Ecoute les événements
@@ -377,8 +370,17 @@ function store:OnEnable()
 	self:RegisterEvent('GUILDBANKBAGSLOTS_CHANGED')
 	self:RegisterEvent('GUILDBANK_UPDATE_TABS')
 
+	self:RegisterMessage('SetDisplayedCharacter')
+
 	-- Perme de suivre les items déplacés d'un onglet à un autre dans la banque
 	self:RegisterEvent('GUILDBANK_ITEM_LOCK_CHANGED')
 	self:SecureHook('PickupGuildBankItem')
 	self:SecureHook('SplitGuildBankItem')
+end
+
+-------------------------------------------------------------------------------
+function store:OnInitialize()
+
+	-- Initialise les données sauvegardées
+	self.db = Kerviel.db:RegisterNamespace(self:GetName(), ns_defaults)
 end

@@ -14,7 +14,7 @@ local SHOW_ALL     = 4		-- Tous les personnages de tous les royaumes
 
 local itemBindings = {
 	[_G.ITEM_SOULBOUND]           = SHOW_SELF,		-- Lié
-	[_G.ITEM_CONJURED]            = SHOW_FACTION,	-- Objet invoqué
+	[_G.ITEM_CONJURED]            = SHOW_SELF,		-- Objet invoqué
 	[_G.ITEM_BIND_QUEST]          = SHOW_SELF,		-- Objet de quête
 	[_G.ITEM_BIND_ON_PICKUP]      = SHOW_SELF,		-- lié quand ramassé
 	[_G.ITEM_BIND_ON_EQUIP]       = SHOW_FACTION,	-- Lié quand équipé
@@ -47,7 +47,7 @@ local function AugmentTooltip(tooltip, itemLink, quantity, ...)
 			for charKey, charData in pairs(sv.char or EmptyTable) do
 				local num, sources = store:SearchInChar(charKey, itemID)
 				if num > 0 then
-					charResults[charKey] = Kerviel:AssertTable(charResults[charKey])
+					charResults[charKey] = Kerviel:NewTable(charResults[charKey])
 					table.insert(charResults[charKey], sources)
 					numResults = numResults + num
 				end
@@ -57,7 +57,7 @@ local function AugmentTooltip(tooltip, itemLink, quantity, ...)
 			for guildKey, guildData in pairs(sv.guild or EmptyTable) do
 				local num, sources = store:SearchInGuild(guildKey, itemID)
 				if num > 0 then
-					guildResults[guildKey] = Kerviel:AssertTable(guildResults[guildKey])
+					guildResults[guildKey] = Kerviel:NewTable(guildResults[guildKey])
 					table.insert(guildResults[guildKey], sources)
 					numResults = numResults + num
 				end

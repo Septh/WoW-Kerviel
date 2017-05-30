@@ -39,7 +39,7 @@ function store:IsStorageAvailableFor(charKey)
 	return sv.char and sv.char[charKey] and sv.char[charKey].pages
 end
 
-function store:ChangeDisplayedCharacter(charKey)
+function store:SetDisplayedCharacter(msg, charKey)
 	self:UpdateFrame(charKey)
 end
 
@@ -183,11 +183,11 @@ end
 -------------------------------------------------------------------------------
 function store:VOID_STORAGE_CONTENTS_UPDATE(evt)
 	if self.db.char.unlocked then
-		self.db.char.pages = Kerviel:AssertTable(self.db.char.pages)
+		self.db.char.pages = Kerviel:NewTable(self.db.char.pages)
 
 		for i = 1, NUM_VOIDSTORAGE_PAGES do
-			self.db.char.pages[i] = Kerviel:AssertTable(self.db.char.pages[i])
-			self.db.char.pages[i].slots = Kerviel:AssertTable(self.db.char.pages[i].slots)
+			self.db.char.pages[i] = Kerviel:NewTable(self.db.char.pages[i])
+			self.db.char.pages[i].slots = Kerviel:NewTable(self.db.char.pages[i].slots)
 			for j = 1, NUM_VOIDSTORAGE_SLOTS do
 				local id = GetVoidItemInfo(i, j)
 				local changed = self:PutItem(self.db.char.pages[i].slots, j, id, 1)
@@ -200,7 +200,7 @@ function store:VOID_STORAGE_CONTENTS_UPDATE(evt)
 	end
 
 	-- Prévient la fenêtre principale de rafraîchir son menu
-	self:NotifyChange()
+	self:NotifyUpdate()
 end
 
 -------------------------------------------------------------------------------
@@ -230,6 +230,8 @@ function store:OnEnable()
 	self:RegisterEvent('VOID_TRANSFER_DONE')
 	self:RegisterEvent('VOID_STORAGE_UPDATE')
 	self:RegisterEvent('VOID_STORAGE_CONTENTS_UPDATE')
+
+	self:RegisterMessage('SetDisplayedCharacter')
 
 	-- Pas dispo avant PLAYER_ENTERING_WORLD
 	self.db.char.unlocked = CanUseVoidStorage()

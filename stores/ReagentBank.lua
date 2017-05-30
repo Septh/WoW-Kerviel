@@ -37,7 +37,7 @@ function store:IsStorageAvailableFor(charKey)
 	return sv.char and sv.char[charKey] and sv.char[charKey].slots
 end
 
-function store:ChangeDisplayedCharacter(charKey)
+function store:SetDisplayedCharacter(msg, charKey)
 	self:UpdateFrame(charKey)
 end
 
@@ -152,9 +152,9 @@ function store:BANKFRAME_OPENED(evt)
 	-- Sauve le contenu de la banque de composants
 	self.db.char.unlocked = IsReagentBankUnlocked()
 	if self.db.char.unlocked then
-		self.db.char.slots  = Kerviel:AssertTable(self.db.char.slots)
+		self.db.char.slots  = Kerviel:NewTable(self.db.char.slots)
 		for i = 1, NUM_REAGENTBANK_SLOTS do
-			self:PutContainerItem(REAGENTBANK_CONTAINER, i, self.db.char.slots)
+			self:PutContainerItem(self.db.char.slots, REAGENTBANK_CONTAINER, i)
 		end
 	end
 
@@ -162,7 +162,7 @@ function store:BANKFRAME_OPENED(evt)
 	self:UpdateFrame()
 
 	-- Prévient la fenêtre principale de rafraîchir son menu
-	self:NotifyChange()
+	self:NotifyUpdate()
 end
 
 -------------------------------------------------------------------------------
@@ -170,7 +170,7 @@ function store:PLAYERREAGENTBANKSLOTS_CHANGED(evt, arg1)
 	arg1 = tonumber(arg1)
 
 	-- Sauve le nouveau contenu
-	local changed = self:PutContainerItem(REAGENTBANK_CONTAINER, arg1, self.db.char.slots)
+	local changed = self:PutContainerItem(self.db.char.slots, REAGENTBANK_CONTAINER, arg1)
 
 	-- Et redessine le slot si la banque du personnage courant est affichée
 	if changed and frame and frame:IsVisible() and Kerviel.displayedCharKey == Kerviel.playerCharKey then
@@ -193,6 +193,8 @@ function store:OnEnable()
 	-- Ecoute les événements
 	self:RegisterEvent('BANKFRAME_OPENED')
 	self:RegisterEvent('PLAYERREAGENTBANKSLOTS_CHANGED')
+
+	self:RegisterMessage('SetDisplayedCharacter')
 
 	-- Pas dispo avant PLAYER_ENTERING_WORLD
 	self.db.char.unlocked = IsReagentBankUnlocked()
